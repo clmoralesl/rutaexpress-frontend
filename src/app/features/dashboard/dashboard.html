@@ -1,7 +1,85 @@
-<h1>RutaExpress</h1>
+<div class="layout">
 
-<p>Sesión iniciada correctamente.</p>
+  <header class="navbar">
+    <div class="marca">
+      <span class="logo">R</span>
 
-<button type="button" (click)="cerrarSesion()">
-  Cerrar sesión
-</button>
+      <div>
+        <h1>RutaExpress</h1>
+        <small>Gestión de envíos</small>
+      </div>
+    </div>
+
+    <div class="usuario">
+      <div class="datos-usuario">
+        <span class="nombre">{{ nombreUsuario }}</span>
+        <span class="rol">{{ rolActivo }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="btn-salir"
+        (click)="cerrarSesion()">
+        Cerrar sesión
+      </button>
+    </div>
+  </header>
+
+
+  <aside class="sidebar">
+
+    <p class="titulo-menu">MENÚ</p>
+
+    <nav>
+      <a class="menu-item activo">
+        <span>▦</span>
+        Dashboard
+      </a>
+
+      <a
+        class="menu-item"
+        *ngIf="tieneRol('ADMIN', 'DESPACHADOR', 'CLIENTE')">
+        <span>▤</span>
+        Envíos
+      </a>
+
+      <a
+        class="menu-item"
+        *ngIf="tieneRol('ADMIN', 'DESPACHADOR')">
+        <span>▣</span>
+        Catálogo
+      </a>
+
+      <a
+        class="menu-item"
+        *ngIf="tieneRol('ADMIN')">
+        <span>▥</span>
+        Reportería
+      </a>
+
+      
+    </nav>
+
+  </aside>
+
+
+  <main class="contenido">
+
+    <div class="encabezado">
+      <div>
+        <p class="bienvenida">Bienvenido/a</p>
+        <h2>Dashboard</h2>
+        <p>Panel principal de RutaExpress.</p>
+      </div>
+    </div>
+
+    <section class="tarjeta">
+      <h3>Sesión iniciada correctamente</h3>
+      <p>
+        Has ingresado correctamente al sistema RutaExpress.
+      </p>
+    </section>
+
+  </main>
+
+</div>

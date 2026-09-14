@@ -48,6 +48,44 @@ export class AuthService {
     });
   }
 
+  obtenerNombreUsuario(): string {
+    const cuenta = this.msalService.instance.getActiveAccount();
+
+    return cuenta?.name ?? cuenta?.username ?? 'Usuario';
+  }
+
+  obtenerRoles(): string[] {
+  const token = sessionStorage.getItem('access_token');
+
+  if (!token) {
+    return [];
+  }
+
+  try {
+    const payloadBase64 = token.split('.')[1]
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    return payload.roles ?? [];
+  } catch {
+    return [];
+  }
+}
+
+  obtenerRolActivo(): string {
+    const roles = this.obtenerRoles();
+
+    return roles.length > 0 ? roles[0] : 'Sin rol';
+  }
+
+  tieneRol(...rolesPermitidos: string[]): boolean {
+    const rolesUsuario = this.obtenerRoles();
+
+    return rolesPermitidos.some((rol) => rolesUsuario.includes(rol));
+  }
+
   cerrarSesion(): void {
     sessionStorage.removeItem('access_token');
 
