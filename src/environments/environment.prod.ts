@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
 
-  apiUrl: 'http://localhost:8080', // TODO: reemplazar cuando el API Gateway esté desplegado (ver issue #9)',
+  apiUrl: 'https://e8a0h7k856.execute-api.us-east-1.amazonaws.com', // API Gateway en EKS
 
   azure: {
     tenantId: 'e4f9c581-8160-4c70-8316-b47f57cd4965',
