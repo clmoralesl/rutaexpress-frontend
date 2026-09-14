@@ -1,62 +1,211 @@
-﻿<section class="envios">
+<section class="shipments-page">
 
-  <h1>Listado de envíos</h1>
+  <div class="encabezado-pagina">
+  <h1>Gestión de envíos</h1>
+  <a href="/dashboard" class="boton-volver">← Volver al Dashboard</a>
+</div>
 
-  <div class="filtros">
+  <section class="panel">
+    <h2>Crear envío</h2>
 
-    <label>
-      Estado
-      <select [(ngModel)]="estado">
-        <option value="">Todos</option>
+    <form
+      [formGroup]="formularioEnvio"
+      (ngSubmit)="crearEnvio()"
+      class="form-grid">
 
-        @for (item of estados; track item) {
-          <option [value]="item">{{ item }}</option>
-        }
-      </select>
-    </label>
+      <div class="campo">
+        <label for="codigoSeguimiento">Código de seguimiento</label>
+        <input
+          id="codigoSeguimiento"
+          type="text"
+          formControlName="codigoSeguimiento">
 
-    <label>
-      Desde
-      <input type="date" [(ngModel)]="fechaDesde" />
-    </label>
+        <small
+          *ngIf="
+            formularioEnvio.controls.codigoSeguimiento.touched &&
+            formularioEnvio.controls.codigoSeguimiento.invalid
+          ">
+          El código de seguimiento es obligatorio.
+        </small>
+      </div>
 
-    <label>
-      Hasta
-      <input type="date" [(ngModel)]="fechaHasta" />
-    </label>
+      <div class="campo">
+        <label for="rutRemitente">RUT remitente</label>
+        <input
+          id="rutRemitente"
+          type="text"
+          formControlName="rutRemitente">
 
-    <button type="button" (click)="cargarEnvios()">
-      Filtrar
-    </button>
+        <small
+          *ngIf="
+            formularioEnvio.controls.rutRemitente.touched &&
+            formularioEnvio.controls.rutRemitente.invalid
+          ">
+          El RUT del remitente es obligatorio.
+        </small>
+      </div>
 
-    <button type="button" (click)="limpiarFiltros()">
-      Limpiar
-    </button>
+      <div class="campo">
+        <label for="rutDestinatario">RUT destinatario</label>
+        <input
+          id="rutDestinatario"
+          type="text"
+          formControlName="rutDestinatario">
 
+        <small
+          *ngIf="
+            formularioEnvio.controls.rutDestinatario.touched &&
+            formularioEnvio.controls.rutDestinatario.invalid
+          ">
+          El RUT del destinatario es obligatorio.
+        </small>
+      </div>
+
+      <div class="campo">
+        <label for="direccionOrigen">Dirección de origen</label>
+        <input
+          id="direccionOrigen"
+          type="text"
+          formControlName="direccionOrigen">
+
+        <small
+          *ngIf="
+            formularioEnvio.controls.direccionOrigen.touched &&
+            formularioEnvio.controls.direccionOrigen.invalid
+          ">
+          La dirección de origen es obligatoria.
+        </small>
+      </div>
+
+      <div class="campo">
+        <label for="direccionDestino">Dirección de destino</label>
+        <input
+          id="direccionDestino"
+          type="text"
+          formControlName="direccionDestino">
+
+        <small
+          *ngIf="
+            formularioEnvio.controls.direccionDestino.touched &&
+            formularioEnvio.controls.direccionDestino.invalid
+          ">
+          La dirección de destino es obligatoria.
+        </small>
+      </div>
+
+      <div class="campo">
+        <label for="pesoKg">Peso (kg)</label>
+        <input
+          id="pesoKg"
+          type="number"
+          min="0.01"
+          step="0.01"
+          formControlName="pesoKg">
+
+        <small
+          *ngIf="
+            formularioEnvio.controls.pesoKg.touched &&
+            formularioEnvio.controls.pesoKg.invalid
+          ">
+          El peso debe ser mayor que 0.
+        </small>
+      </div>
+
+      <div class="acciones-formulario">
+        <button type="submit">
+          Crear envío
+        </button>
+      </div>
+
+    </form>
+  </section>
+
+  <div
+    *ngIf="mensaje"
+    class="notificacion exito">
+    {{ mensaje }}
   </div>
 
-  @if (cargando) {
-    <div class="estado-visual cargando">
-      <span class="spinner"></span>
+  <div
+    *ngIf="error"
+    class="notificacion error">
+    {{ error }}
+  </div>
+
+  <section class="panel">
+    <h2>Listado de envíos</h2>
+
+    <div class="filtros">
+
+      <div class="campo">
+        <label for="estado">Estado</label>
+        <select
+          id="estado"
+          [(ngModel)]="estado">
+
+          <option value="">Todos</option>
+
+          <option
+            *ngFor="let opcion of estados"
+            [value]="opcion">
+            {{ opcion }}
+          </option>
+
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="fechaDesde">Desde</label>
+        <input
+          id="fechaDesde"
+          type="date"
+          [(ngModel)]="fechaDesde">
+      </div>
+
+      <div class="campo">
+        <label for="fechaHasta">Hasta</label>
+        <input
+          id="fechaHasta"
+          type="date"
+          [(ngModel)]="fechaHasta">
+      </div>
+
+      <div class="acciones-filtros">
+        <button
+          type="button"
+          (click)="cargarEnvios()">
+          Filtrar
+        </button>
+
+        <button
+          type="button"
+          class="secundario"
+          (click)="limpiarFiltros()">
+          Limpiar
+        </button>
+      </div>
+
+    </div>
+
+    <div
+      *ngIf="cargando"
+      class="estado-carga">
+      <div class="spinner"></div>
       <span>Cargando envíos...</span>
     </div>
-  }
 
-  @if (error) {
-    <p class="estado-visual error">
-      {{ error }}
-    </p>
-  }
+    <div
+      *ngIf="!cargando && !error && envios.length === 0"
+      class="estado-vacio">
+      No se encontraron envíos.
+    </div>
 
-  @if (!cargando && !error && envios.length === 0) {
-    <p class="estado-visual">
-      No existen envíos para los filtros seleccionados.
-    </p>
-  }
+    <div
+      *ngIf="!cargando && envios.length > 0"
+      class="tabla-contenedor">
 
-  @if (!cargando && !error && envios.length > 0) {
-    <div class="tabla-contenedor">
       <table>
+
         <thead>
           <tr>
             <th>ID</th>
@@ -65,24 +214,64 @@
             <th>Destino</th>
             <th>Estado</th>
             <th>Fecha creación</th>
+
+            <th *ngIf="puedeGestionarEstados()">
+              Acciones
+            </th>
           </tr>
         </thead>
 
         <tbody>
-          @for (envio of envios; track envio.id) {
-            <tr>
-              <td>{{ envio.id }}</td>
-              <td>{{ envio.codigoSeguimiento }}</td>
-              <td>{{ envio.direccionOrigen }}</td>
-              <td>{{ envio.direccionDestino }}</td>
-              <td>{{ envio.estado }}</td>
-              <td>{{ envio.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</td>
-            </tr>
-          }
+
+          <tr *ngFor="let envio of envios">
+
+            <td>{{ envio.id }}</td>
+
+            <td>{{ envio.codigoSeguimiento }}</td>
+
+            <td>{{ envio.direccionOrigen }}</td>
+
+            <td>{{ envio.direccionDestino }}</td>
+
+            <td>
+              <strong>{{ envio.estado }}</strong>
+            </td>
+
+            <td>
+              {{ envio.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+
+            <td *ngIf="puedeGestionarEstados()">
+
+              <div
+                class="acciones-estado"
+                *ngIf="obtenerTransiciones(envio.estado).length > 0">
+
+                <button
+                  type="button"
+                  *ngFor="let nuevoEstado of obtenerTransiciones(envio.estado)"
+                  (click)="actualizarEstado(envio, nuevoEstado)">
+                  {{ nuevoEstado }}
+                </button>
+
+              </div>
+
+              <span
+                *ngIf="obtenerTransiciones(envio.estado).length === 0"
+                class="sin-acciones">
+                Sin acciones
+              </span>
+
+            </td>
+
+          </tr>
+
         </tbody>
+
       </table>
+
     </div>
-  }
+
+  </section>
 
 </section>
-
