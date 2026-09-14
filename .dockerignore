@@ -1,0 +1,16 @@
+﻿node_modules/
+.angular/
+dist/
+.git/
+.gitignore
+.editorconfig
+.vscode/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+karma.conf.js
+src/test.ts
+**/*.spec.ts
+tsconfig.spec.json
