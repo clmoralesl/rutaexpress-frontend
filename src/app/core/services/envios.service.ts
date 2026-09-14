@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+﻿import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -22,6 +22,19 @@ export interface FiltrosEnvios {
   fechaHasta?: string;
 }
 
+export interface CrearEnvioRequest {
+  codigoSeguimiento: string;
+  rutRemitente: string;
+  rutDestinatario: string;
+  direccionOrigen: string;
+  direccionDestino: string;
+  pesoKg: number;
+}
+
+export interface ActualizarEstadoRequest {
+  estado: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -39,19 +52,26 @@ export class EnviosService {
     }
 
     if (filtros.fechaDesde) {
-      params = params.set(
-        'fechaDesde',
-        `${filtros.fechaDesde}T00:00:00`
-      );
+      params = params.set('fechaDesde', `${filtros.fechaDesde}T00:00:00`);
     }
 
     if (filtros.fechaHasta) {
-      params = params.set(
-        'fechaHasta',
-        `${filtros.fechaHasta}T23:59:59`
-      );
+      params = params.set('fechaHasta', `${filtros.fechaHasta}T23:59:59`);
     }
 
     return this.http.get<Envio[]>(this.apiUrl, { params });
+  }
+
+  crear(request: CrearEnvioRequest): Observable<Envio> {
+    return this.http.post<Envio>(this.apiUrl, request);
+  }
+
+  actualizarEstado(id: number, estado: string): Observable<Envio> {
+    const request: ActualizarEstadoRequest = { estado };
+
+    return this.http.put<Envio>(
+      `${this.apiUrl}/${id}/estado`,
+      request
+    );
   }
 }
