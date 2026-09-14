@@ -6,7 +6,7 @@ export const environment = {
   azure: {
     tenantId: 'e4f9c581-8160-4c70-8316-b47f57cd4965',
     clientId: '853e11cd-e801-4317-96e7-bda1c6dd8d74',
-    redirectUri: 'http://localhost:4200',
+    redirectUri: 'http://abcead9f6bdf5457b96b4141372dc79d-105546247.us-east-1.elb.amazonaws.com',
     scopes: ['api://a55c035c-76ef-4ddf-ab9a-545d90386f03/access_as_user']
   }
 };
