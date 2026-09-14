@@ -1,0 +1,88 @@
+﻿<section class="envios">
+
+  <h1>Listado de envíos</h1>
+
+  <div class="filtros">
+
+    <label>
+      Estado
+      <select [(ngModel)]="estado">
+        <option value="">Todos</option>
+
+        @for (item of estados; track item) {
+          <option [value]="item">{{ item }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Desde
+      <input type="date" [(ngModel)]="fechaDesde" />
+    </label>
+
+    <label>
+      Hasta
+      <input type="date" [(ngModel)]="fechaHasta" />
+    </label>
+
+    <button type="button" (click)="cargarEnvios()">
+      Filtrar
+    </button>
+
+    <button type="button" (click)="limpiarFiltros()">
+      Limpiar
+    </button>
+
+  </div>
+
+  @if (cargando) {
+    <div class="estado-visual cargando">
+      <span class="spinner"></span>
+      <span>Cargando envíos...</span>
+    </div>
+  }
+
+  @if (error) {
+    <p class="estado-visual error">
+      {{ error }}
+    </p>
+  }
+
+  @if (!cargando && !error && envios.length === 0) {
+    <p class="estado-visual">
+      No existen envíos para los filtros seleccionados.
+    </p>
+  }
+
+  @if (!cargando && !error && envios.length > 0) {
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Código</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Estado</th>
+            <th>Fecha creación</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (envio of envios; track envio.id) {
+            <tr>
+              <td>{{ envio.id }}</td>
+              <td>{{ envio.codigoSeguimiento }}</td>
+              <td>{{ envio.direccionOrigen }}</td>
+              <td>{{ envio.direccionDestino }}</td>
+              <td>{{ envio.estado }}</td>
+              <td>{{ envio.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</section>
+
