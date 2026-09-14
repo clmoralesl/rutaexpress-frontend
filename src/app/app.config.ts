@@ -53,8 +53,8 @@ export function msalGuardConfigFactory(): MsalGuardConfiguration {
 
 export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string>>();
-  // Protege las llamadas al API mapeando el endpoint a los scopes
-  protectedResourceMap.set(environment.apiUrl, environment.azure.scopes);
+  // Agregar '/*' para asegurar que MSAL intercepte cualquier ruta de esta API
+  protectedResourceMap.set(`${environment.apiUrl}/*`, environment.azure.scopes);
 
   return {
     interactionType: InteractionType.Redirect,

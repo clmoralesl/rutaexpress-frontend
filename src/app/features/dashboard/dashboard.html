@@ -78,6 +78,19 @@
       <p>
         Has ingresado correctamente al sistema RutaExpress.
       </p>
+      
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+      
+      <h4>Probar Conexión con AWS API Gateway (MSAL Interceptor)</h4>
+      <p>Presiona el botón para consumir un endpoint protegido. El Interceptor debería inyectar el Token silenciosamente.</p>
+      <button (click)="probarInterceptor()" style="padding: 10px 15px; margin-top: 10px; background-color: #0078D4; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Probar Endpoint /mis-envios
+      </button>
+
+      <div *ngIf="respuestaApi" style="margin-top: 15px; background: #f4f4f4; padding: 15px; border-radius: 4px; font-family: monospace;">
+        <strong>Respuesta de Spring Boot (vía API Gateway):</strong><br>
+        <pre>{{ respuestaApi | json }}</pre>
+      </div>
     </section>
 
   </main>
