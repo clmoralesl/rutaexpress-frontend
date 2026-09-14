@@ -5,16 +5,23 @@ import {
 } from '@angular/core';
 
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import {
   MSAL_INSTANCE,
+  MSAL_GUARD_CONFIG,
+  MSAL_INTERCEPTOR_CONFIG,
   MsalBroadcastService,
-  MsalService
+  MsalService,
+  MsalGuard,
+  MsalInterceptor,
+  MsalGuardConfiguration,
+  MsalInterceptorConfiguration
 } from '@azure/msal-angular';
 
 import {
   BrowserCacheLocation,
+  InteractionType,
   IPublicClientApplication,
   PublicClientApplication
 } from '@azure/msal-browser';
@@ -35,20 +42,54 @@ export function msalInstanceFactory(): IPublicClientApplication {
   });
 }
 
+export function msalGuardConfigFactory(): MsalGuardConfiguration {
+  return {
+    interactionType: InteractionType.Redirect,
+    authRequest: {
+      scopes: environment.azure.scopes
+    }
+  };
+}
+
+export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
+  const protectedResourceMap = new Map<string, Array<string>>();
+  // Agregar '/*' para asegurar que MSAL intercepte cualquier ruta de esta API
+  protectedResourceMap.set(`${environment.apiUrl}/*`, environment.azure.scopes);
+
+  return {
+    interactionType: InteractionType.Redirect,
+    protectedResourceMap
+  };
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
 
+    // Habilitar HttpClient con interceptores DI clásicos para MsalInterceptor
     provideHttpClient(withInterceptorsFromDi()),
 
     {
-  provide: MSAL_INSTANCE,
-  useFactory: msalInstanceFactory
-},
-
-MsalService,
-MsalBroadcastService
+      provide: HTTP_INTERCEPTORS,
+      useClass: MsalInterceptor,
+      multi: true
+    },
+    {
+      provide: MSAL_INSTANCE,
+      useFactory: msalInstanceFactory
+    },
+    {
+      provide: MSAL_GUARD_CONFIG,
+      useFactory: msalGuardConfigFactory
+    },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useFactory: msalInterceptorConfigFactory
+    },
+    MsalService,
+    MsalBroadcastService,
+    MsalGuard
   ]
 };
