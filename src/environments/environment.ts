@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
 
-  apiUrl: 'https://e8a0h7k856.execute-api.us-east-1.amazonaws.com', // API Gateway en EKS
+  apiUrl: 'https://7fq86ku2j4.execute-api.us-east-1.amazonaws.com', // API Gateway en EKS
 
   azure: {
     tenantId: 'e4f9c581-8160-4c70-8316-b47f57cd4965',
