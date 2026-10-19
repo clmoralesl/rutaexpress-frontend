@@ -1,4 +1,4 @@
-﻿
+
 import { Routes } from '@angular/router';
 import { MsalGuard } from '@azure/msal-angular';
 
@@ -20,6 +20,10 @@ export const routes: Routes = [
   },
   {
     path: 'rastreo',
+    component: RastreoProvisional
+  },
+  {
+    path: 'rastreo/:codigo',
     component: RastreoProvisional
   },
   {

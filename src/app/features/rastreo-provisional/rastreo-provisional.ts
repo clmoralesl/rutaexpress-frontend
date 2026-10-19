@@ -386,7 +386,7 @@ export class RastreoProvisional implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
-      const codigoUrl = params.get('codigo');
+      const codigoUrl = this.route.snapshot.paramMap.get('codigo') ?? params.get('codigo');
       if (codigoUrl) {
         this.codigo = codigoUrl;
         this.buscar();
