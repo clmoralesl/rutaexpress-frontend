@@ -34,7 +34,7 @@ export function msalInstanceFactory(): IPublicClientApplication {
     auth: {
       clientId: environment.azure.clientId,
       authority: `https://login.microsoftonline.com/${environment.azure.tenantId}`,
-      redirectUri: environment.azure.redirectUri
+      redirectUri: typeof window !== 'undefined' ? (window.location.origin + '/') : environment.azure.redirectUri
     },
     cache: {
       cacheLocation: BrowserCacheLocation.SessionStorage

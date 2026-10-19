@@ -90,7 +90,7 @@ export class AuthService {
     sessionStorage.removeItem('access_token');
 
     this.msalService.logoutRedirect({
-      postLogoutRedirectUri: environment.azure.redirectUri
+      postLogoutRedirectUri: typeof window !== 'undefined' ? (window.location.origin + '/') : environment.azure.redirectUri
     }).subscribe();
   }
 }
