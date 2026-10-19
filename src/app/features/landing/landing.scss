@@ -49,7 +49,7 @@ button {
   height: 42px;
   border-radius: 12px;
   background: #ff641c;
-  color: #fff;
+  color: #242424;
   font-size: 27px;
   font-weight: 900;
   transform: rotate(-6deg);
@@ -303,7 +303,7 @@ nav button {
   height: 31px;
   border-radius: 9px;
   background: #ff641c;
-  color: #fff;
+  color: #242424;
   font-size: 20px;
   font-weight: 900;
 }
@@ -338,7 +338,7 @@ nav button {
   margin-bottom: 5px;
   border-radius: 19px;
   background: #fff0e5;
-  color: #ff641c;
+  color: #a83b00;
   font-size: 42px;
   font-weight: 800;
 }
@@ -414,7 +414,7 @@ nav button {
   height: 23px;
   border-radius: 5px;
   background: #fff;
-  color: #f26620;
+  color: #a83b00;
   font-weight: 900;
 }
 
@@ -437,7 +437,7 @@ nav button {
   height: 33px;
   border-radius: 10px;
   background: #fff0e5;
-  color: #f26620;
+  color: #a83b00;
   font-size: 20px;
   font-weight: 800;
 }
@@ -505,7 +505,7 @@ nav button {
   height: 43px;
   border-radius: 12px;
   background: #fff0e5;
-  color: #f26620;
+  color: #a83b00;
   font-size: 28px;
 }
 
@@ -556,7 +556,7 @@ nav button {
   border-radius: 11px;
   padding: 15px 24px;
   background: #ff641c;
-  color: #fff;
+  color: #242424;
   font-size: 14px;
   font-weight: 750;
   transition: background .2s, transform .2s;
@@ -657,17 +657,17 @@ nav button {
 
 .express-icon {
   background: #fff0e4;
-  color: #f47722;
+  color: #994000;
 }
 
 .day-icon {
   background: #fff2d0;
-  color: #cf941c;
+  color: #765000;
 }
 
 .standard-icon {
   background: #f1eae4;
-  color: #986c4c;
+  color: #65432e;
 }
 
 .service-index {
@@ -736,7 +736,7 @@ nav button {
   height: 32px;
   border-radius: 50%;
   background: #fff0e5;
-  color: #f46a24;
+  color: #a83b00;
   font-size: 18px;
 }
 
@@ -848,7 +848,7 @@ nav button {
   border-radius: 32px;
   background: linear-gradient(135deg, #ff9b4b, #ff641c);
   box-shadow: 17px 20px 0 #a93d1244;
-  color: #fff;
+  color: #242424;
   font-size: 85px;
   font-weight: 900;
   transform: rotate(-10deg);
@@ -1171,14 +1171,6 @@ nav button {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition: none !important;
-    scroll-behavior: auto !important;
-
-
 .hero {
   padding-top: 30px;
   padding-bottom: 55px;
@@ -1210,5 +1202,12 @@ nav button {
     height: 300px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none;
+    scroll-behavior: auto;
   }
 }

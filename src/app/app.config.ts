@@ -7,7 +7,7 @@ import {
   provideZoneChangeDetection
 } from '@angular/core';
 
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 
 import {
   provideHttpClient,
@@ -112,7 +112,6 @@ export const appConfig: ApplicationConfig = {
 
     provideAppInitializer(async () => {
       const msalService = inject(MsalService);
-      const router = inject(Router);
 
       await msalService.instance.initialize();
 

@@ -60,7 +60,7 @@
   flex-shrink: 0;
   border-radius: 12px;
   background: #ff641c;
-  color: #ffffff;
+  color: #242424;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,7 +182,7 @@
 
 .menu-item.activo {
   background: #ff641c;
-  color: #ffffff;
+  color: #242424;
   font-weight: 700;
   box-shadow: 0 5px 14px rgba(255, 100, 28, 0.18);
 }
@@ -256,7 +256,7 @@
   border-radius: 9px;
   border: 1px solid #ff641c;
   background: #ff641c;
-  color: #ffffff;
+  color: #242424;
   font: inherit;
   font-size: 13px;
   font-weight: 700;
