@@ -400,7 +400,7 @@ export class RastreoProvisional implements OnInit {
 
     if (alerta instanceof HTMLElement) {
       alerta.style.animation = 'none';
-      void alerta.offsetWidth;
+      alerta.getBoundingClientRect();
       alerta.style.animation = '';
     }
     this.mensajeError = '';
