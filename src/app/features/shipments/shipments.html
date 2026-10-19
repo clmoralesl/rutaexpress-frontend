@@ -120,17 +120,9 @@
     </form>
   </section>
 
-  <div
-    *ngIf="mensaje"
-    class="notificacion exito">
-    {{ mensaje }}
-  </div>
+  
 
-  <div
-    *ngIf="error"
-    class="notificacion error">
-    {{ error }}
-  </div>
+  
 
   <section class="panel">
     <h2>Listado de envíos</h2>
@@ -187,18 +179,9 @@
 
     </div>
 
-    <div
-      *ngIf="cargando"
-      class="estado-carga">
-      <div class="spinner"></div>
-      <span>Cargando envíos...</span>
-    </div>
+    <app-skeleton *ngIf="cargando" [rows]="5"></app-skeleton>
 
-    <div
-      *ngIf="!cargando && !error && envios.length === 0"
-      class="estado-vacio">
-      No se encontraron envíos.
-    </div>
+    <app-empty-state *ngIf="!cargando && !error && envios.length === 0" title="Sin envíos" message="Aún no tienes envíos registrados."></app-empty-state>
 
     <div
       *ngIf="!cargando && envios.length > 0"
@@ -275,3 +258,12 @@
   </section>
 
 </section>
+
+
+<app-confirm-dialog
+  [visible]="confirmacionVisible"
+  title="Confirmar cambio de estado"
+  [message]="'¿Deseas cambiar el estado del envío a ' + estadoPendiente + '?'"
+  (confirmed)="confirmarCambio()"
+  (cancelled)="cancelarCambio()">
+</app-confirm-dialog>
