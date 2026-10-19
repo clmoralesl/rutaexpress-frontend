@@ -130,7 +130,7 @@ nav button {
 
 .hero {
   position: relative;
-  padding: 42px 6% 70px;
+  padding: 30px 6% 55px;
   background:
     radial-gradient(
       ellipse at 81% 37%,
@@ -146,7 +146,7 @@ nav button {
   align-items: center;
   gap: 35px;
   max-width: 1380px;
-  min-height: 390px;
+  min-height: 350px;
   margin: 0 auto;
 }
 
@@ -233,7 +233,7 @@ nav button {
 .hero-visual {
   position: relative;
   width: 100%;
-  height: 350px;
+  height: 320px;
   isolation: isolate;
 }
 
@@ -473,7 +473,7 @@ nav button {
   position: relative;
   z-index: 3;
   max-width: 900px;
-  margin: 5px auto -105px;
+  margin: 0px auto -85px;
 }
 
 .tracking {
@@ -580,7 +580,7 @@ nav button {
 /* Servicios */
 
 .services {
-  padding: 155px 6% 90px;
+  padding: 125px 6% 90px;
   background: #fffdfa;
 }
 
@@ -1171,27 +1171,6 @@ nav button {
   }
 }
 
-.hero {
-  padding-top: 30px;
-  padding-bottom: 55px;
-}
-
-.hero-layout {
-  min-height: 350px;
-}
-
-.hero-visual {
-  height: 320px;
-}
-
-.tracking-wrap {
-  margin-top: 0;
-  margin-bottom: -85px;
-}
-
-.services {
-  padding-top: 125px;
-}
 
 @media (max-width: 800px) {
   .hero-layout {
