@@ -30,7 +30,7 @@ interface SeguimientoResponse {
         <h1>Rastrea tu envío</h1>
         <p class="subtitulo">Consulta el estado de tu paquete con su código de seguimiento.</p>
 
-        <form (ngSubmit)="buscar()" class="buscador">
+        <form (ngSubmit)="buscar()" class="buscador" novalidate>
           <label for="codigo">Código de seguimiento</label>
           <div class="fila">
             <input
@@ -49,7 +49,7 @@ interface SeguimientoResponse {
         </form>
 
         @if (mensajeError) {
-          <div class="alerta" role="alert">{{ mensajeError }}</div>
+          <div class="alerta alerta-rastreo" role="alert">{{ mensajeError }}</div>
         }
 
         @if (resultado) {
@@ -104,6 +104,28 @@ interface SeguimientoResponse {
     </main>
   `,
   styles: [`
+    .alerta-rastreo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 18px;
+      padding: 16px;
+      border: 2px solid #ff641c;
+      border-radius: 12px;
+      background: #fff2e9;
+      color: #87340c;
+      text-align: left;
+      animation: aparecerError 250ms ease-out;
+    }
+
+    .alerta-rastreo strong {
+      font-size: 15px;
+    }
+
+    @keyframes aparecerError {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
     :host {
       display: block;
       min-height: 100vh;
@@ -374,8 +396,20 @@ export class RastreoProvisional implements OnInit {
 
   buscar(): void {
     const codigoLimpio = this.codigo.trim();
+    const alerta = document.querySelector('.alerta-rastreo');
+
+    if (alerta instanceof HTMLElement) {
+      alerta.style.animation = 'none';
+      void alerta.offsetWidth;
+      alerta.style.animation = '';
+    }
     this.mensajeError = '';
     this.resultado = null;
+
+    if (codigoLimpio.length < 4) {
+      this.mensajeError = 'Ingresa un código de seguimiento válido.';
+      return;
+    }
 
     if (!/^[a-zA-Z0-9-]{4,50}$/.test(codigoLimpio)) {
       this.mensajeError = 'Ingresa un código de seguimiento válido.';
@@ -394,7 +428,7 @@ export class RastreoProvisional implements OnInit {
       error: (error: HttpErrorResponse) => {
         this.cargando = false;
         this.mensajeError = error.status === 404
-          ? 'El código de seguimiento no existe. Verifica que esté escrito correctamente.'
+          ? 'Ingresa un código de seguimiento válido.'
           : 'No fue posible consultar el seguimiento. Inténtalo nuevamente.';
       }
     });
