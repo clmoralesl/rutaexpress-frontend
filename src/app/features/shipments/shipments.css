@@ -60,7 +60,7 @@ button {
   border-radius: 5px;
   padding: 9px 14px;
   cursor: pointer;
-  background: #1f4e78;
+  background: #ff641c;
   color: #ffffff;
 }
 
@@ -69,7 +69,7 @@ button:hover {
 }
 
 button.secundario {
-  background: #666666;
+  background: #7c6254;
 }
 
 .notificacion {
@@ -170,7 +170,7 @@ th {
   display: inline-block;
   padding: 9px 14px;
   border-radius: 5px;
-  background: #1f4e78;
+  background: #ff641c;
   color: #ffffff;
   text-decoration: none;
   font-weight: 600;
@@ -178,4 +178,30 @@ th {
 
 .boton-volver:hover {
   opacity: 0.9;
+}
+/* Identidad visual RutaExpress */
+.shipments-page {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #25201d;
+  background: #fffdfa;
+  min-height: 100vh;
+}
+
+.shipments-page .panel {
+  border-color: #f0ded1;
+  border-radius: 14px;
+}
+
+.shipments-page .campo input:focus,
+.shipments-page .campo select:focus {
+  outline: 2px solid #ff641c;
+  outline-offset: 1px;
+}
+
+.shipments-page th {
+  background: #fff0e5;
+}
+
+.shipments-page .boton-volver {
+  background: #ff641c;
 }
