@@ -1,3 +1,9 @@
+
+/* =========================================
+   RUTAEXPRESS - DASHBOARD
+   Identidad visual corporativa
+   ========================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -5,33 +11,39 @@
 :host {
   display: block;
   min-height: 100vh;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #1f2937;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #282522;
 }
+
+/* =========================================
+   ESTRUCTURA GENERAL
+   ========================================= */
 
 .layout {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: 72px 1fr;
+  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-rows: 76px 1fr;
   grid-template-areas:
     "navbar navbar"
     "sidebar contenido";
-  background: #f4f6f8;
+  background: #faf7f3;
 }
 
-
-/* NAVBAR */
+/* =========================================
+   BARRA SUPERIOR
+   ========================================= */
 
 .navbar {
   grid-area: navbar;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   padding: 0 32px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  background: #fffdfa;
+  border-bottom: 1px solid #eee5dc;
+  box-shadow: 0 2px 10px rgba(40, 37, 34, 0.04);
   z-index: 10;
 }
 
@@ -39,119 +51,151 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .logo {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: #1d4ed8;
-  color: white;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #ff641c;
+  color: #242424;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 25px;
+  font-weight: 900;
+  box-shadow: 0 5px 14px rgba(255, 100, 28, 0.18);
 }
 
 .marca h1 {
   margin: 0;
-  font-size: 20px;
-  color: #111827;
+  color: #282522;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
 }
 
 .marca small {
-  color: #6b7280;
+  display: block;
+  margin-top: 3px;
+  color: #887c72;
+  font-size: 12px;
 }
 
 .usuario {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: flex-end;
+  gap: 18px;
+  min-width: 0;
 }
 
 .datos-usuario {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   text-align: right;
 }
 
 .nombre {
-  font-size: 14px;
-  font-weight: 600;
+  max-width: 340px;
+  overflow: hidden;
+  color: #282522;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rol {
-  margin-top: 3px;
-  font-size: 12px;
-  color: #2563eb;
+  margin-top: 4px;
+  color: #e85e1c;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
 }
 
 .btn-salir {
-  padding: 9px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-  background: white;
-  color: #374151;
+  padding: 10px 17px;
+  border: 1px solid #e7dcd2;
+  border-radius: 9px;
+  background: #fffdfa;
+  color: #403a35;
   cursor: pointer;
-  font-weight: 500;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .btn-salir:hover {
-  background: #f3f4f6;
+  background: #fff0e5;
+  border-color: #ffbd96;
 }
 
-
-/* SIDEBAR */
+/* =========================================
+   MENÚ LATERAL
+   ========================================= */
 
 .sidebar {
   grid-area: sidebar;
-  background: #111827;
-  padding: 28px 16px;
+  padding: 28px 15px;
+  background: #282522;
 }
 
 .titulo-menu {
-  color: #9ca3af;
+  margin-bottom: 17px;
+  padding: 0 13px;
+  color: #b9aaa0;
   font-size: 11px;
-  letter-spacing: 1px;
-  padding: 0 12px;
-  margin-bottom: 14px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
 }
 
 .sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 7px;
-  color: #d1d5db;
+  padding: 13px 14px;
+  border-radius: 10px;
+  color: #d9d0c9;
   text-decoration: none;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
 .menu-item:hover {
-  background: #1f2937;
-  color: white;
+  background: #403a35;
+  color: #ffffff;
 }
 
 .menu-item.activo {
-  background: #2563eb;
-  color: white;
+  background: #ff641c;
+  color: #242424;
+  font-weight: 700;
+  box-shadow: 0 5px 14px rgba(255, 100, 28, 0.18);
 }
 
-
-/* CONTENIDO */
+/* =========================================
+   CONTENIDO PRINCIPAL
+   ========================================= */
 
 .contenido {
   grid-area: contenido;
+  min-width: 0;
   padding: 36px;
+  background: #faf7f3;
 }
 
 .encabezado {
@@ -159,47 +203,103 @@
 }
 
 .bienvenida {
-  color: #6b7280;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
+  color: #8a7e74;
   font-size: 14px;
 }
 
 .encabezado h2 {
   margin: 0;
-  font-size: 28px;
-  color: #111827;
+  color: #282522;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
 }
 
 .encabezado p {
-  margin-top: 8px;
-  color: #6b7280;
+  margin-top: 9px;
+  color: #80756c;
+  font-size: 14px;
 }
 
+/* =========================================
+   TARJETAS
+   ========================================= */
+
 .tarjeta {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 27px;
+  border: 1px solid #eee4da;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(55, 39, 27, 0.05);
 }
 
 .tarjeta h3 {
   margin-top: 0;
+  color: #282522;
   font-size: 17px;
+  font-weight: 750;
 }
 
 .tarjeta p {
   margin-bottom: 0;
-  color: #6b7280;
+  color: #786f67;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
+/* =========================================
+   BOTONES DEL CONTENIDO
+   ========================================= */
 
-/* RESPONSIVE */
+.contenido button:not(.btn-salir) {
+  border-radius: 9px;
+  border: 1px solid #ff641c;
+  background: #ff641c;
+  color: #242424;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.contenido button:not(.btn-salir):hover:not(:disabled) {
+  background: #e9520d;
+  border-color: #e9520d;
+  transform: translateY(-1px);
+}
+
+.contenido button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 205px minmax(0, 1fr);
+  }
+
+  .navbar {
+    padding: 0 20px;
+  }
+
+  .contenido {
+    padding: 28px 22px;
+  }
+
+  .nombre {
+    max-width: 200px;
+  }
+}
 
 @media (max-width: 768px) {
-
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
       "navbar"
@@ -208,12 +308,13 @@
   }
 
   .navbar {
-    padding: 16px;
-    align-items: flex-start;
-    gap: 16px;
+    padding: 15px 16px;
+    flex-wrap: wrap;
+    gap: 14px;
   }
 
   .usuario {
+    flex-wrap: wrap;
     gap: 10px;
   }
 
@@ -222,7 +323,7 @@
   }
 
   .sidebar {
-    padding: 10px;
+    padding: 10px 12px;
   }
 
   .titulo-menu {
@@ -231,14 +332,51 @@
 
   .sidebar nav {
     flex-direction: row;
+    gap: 8px;
     overflow-x: auto;
   }
 
   .menu-item {
+    flex-shrink: 0;
     white-space: nowrap;
+    padding: 11px 13px;
+    font-size: 13px;
   }
 
   .contenido {
-    padding: 24px 16px;
+    padding: 25px 16px;
+  }
+
+  .encabezado h2 {
+    font-size: 26px;
+  }
+
+  .tarjeta {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .marca h1 {
+    font-size: 18px;
+  }
+
+  .logo {
+    width: 39px;
+    height: 39px;
+    font-size: 23px;
+  }
+
+  .navbar {
+    align-items: flex-start;
+  }
+
+  .usuario {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .btn-salir {
+    padding: 9px 13px;
   }
 }

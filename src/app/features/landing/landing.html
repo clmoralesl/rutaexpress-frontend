@@ -1,0 +1,354 @@
+
+<header class="header">
+  <a class="logo" href="/" aria-label="RutaExpress, inicio">
+    <span class="logo-symbol">R<span class="logo-arrow">↗</span></span>
+    <span class="logo-name">ruta<span>express</span><b>.</b></span>
+  </a>
+
+  <nav aria-label="Navegación principal">
+    <a href="#servicios">Servicios</a>
+    <a href="#seguimiento">Rastrear envío</a>
+    <a href="#empresas">Empresas</a>
+
+    @if (nombreUsuario()) {
+      <span class="nombre-usuario">{{ nombreUsuario() }}</span>
+
+      <button
+        type="button"
+        class="nav-button"
+        (click)="irDashboard()">
+        Ir al dashboard
+      </button>
+
+      <button
+        type="button"
+        class="logout-button"
+        (click)="cerrarSesion()">
+        Cerrar sesión
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="nav-button"
+        (click)="iniciarSesion()">
+        Iniciar sesión
+      </button>
+    }
+  </nav>
+</header>
+
+<main>
+  <section class="hero" id="inicio">
+    <div class="hero-layout">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <span class="eyebrow-line"></span>
+          LOGÍSTICA INTELIGENTE DE ÚLTIMA MILLA
+        </div>
+
+        <h1>
+          Tus envíos.<br />
+          Todas las rutas.<br />
+          <span>Un solo lugar.</span>
+        </h1>
+
+        <p class="hero-description">
+          Una plataforma que conecta a 20 couriers
+          para simplificar la gestión de envíos,
+          coordinar despachos y facilitar el seguimiento
+          de cada entrega.
+        </p>
+
+        <div class="hero-highlights">
+          <div class="highlight">
+            <strong>20</strong>
+            <span>couriers<br />conectados</span>
+          </div>
+
+          <span class="highlight-divider"></span>
+
+          <div class="highlight">
+            <strong>01</strong>
+            <span>plataforma<br />unificada</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="visual-halo"></div>
+        <div class="visual-route route-a"></div>
+        <div class="visual-route route-b"></div>
+
+        <div class="visual-hub">
+          <div class="hub-header">
+            <span class="hub-mark">R</span>
+            <span class="hub-title">RutaExpress</span>
+            <span class="hub-status"></span>
+          </div>
+
+          <div class="hub-content">
+            <div class="hub-icon">↗</div>
+            <strong>20 couriers</strong>
+            <span>Una red conectada</span>
+          </div>
+
+          <div class="hub-bottom">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="visual-package package-left">
+          <span class="package-tape"></span>
+          <span class="package-mark">R</span>
+        </div>
+
+        <div class="visual-package package-right">
+          <span class="package-tape"></span>
+        </div>
+
+        <div class="visual-node node-one">
+          <span>✓</span>
+          <div>
+            <strong>Envíos</strong>
+            <small>Gestión centralizada</small>
+          </div>
+        </div>
+
+        <div class="visual-node node-two">
+          <span>↗</span>
+          <div>
+            <strong>Última milla</strong>
+            <small>Operadores conectados</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tracking-wrap" id="seguimiento">
+      <div class="tracking">
+        <div class="tracking-heading">
+          <div class="tracking-title">
+            <span class="tracking-icon">⌖</span>
+            <div>
+              <label for="codigo">¿Dónde está tu envío?</label>
+              <p>Ingresa tu código para consultar su seguimiento.</p>
+            </div>
+          </div>
+
+          <span class="tracking-badge">SEGUIMIENTO DE ENVÍOS</span>
+        </div>
+
+        <div class="tracking-form">
+          <input
+            id="codigo"
+            type="text"
+            autocomplete="off"
+            placeholder="Ingresa tu código de seguimiento"
+            [value]="codigoSeguimiento()"
+            (input)="actualizarCodigo($event)"
+            (keydown.enter)="rastrearEnvio()"
+          />
+
+          <button
+            type="button"
+            (click)="rastrearEnvio()"
+            [disabled]="!codigoSeguimiento().trim()">
+            Rastrear envío
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="services" id="servicios">
+    <div class="section-heading">
+      <span class="section-kicker">SOLUCIONES DE ENVÍO</span>
+
+      <h2>
+        Una opción para <em>cada necesidad.</em>
+      </h2>
+
+      <p>
+        Explora alternativas de servicio disponibles
+        a través de nuestra red de operadores.
+      </p>
+    </div>
+
+    <div class="services-grid">
+      <article class="service-card">
+        <div class="service-card-top">
+          <span class="service-icon express-icon">⚡</span>
+          <span class="service-index">01 / 03</span>
+        </div>
+
+        <h3>Express</h3>
+
+        <p>
+          Alternativas prioritarias para entregas
+          que requieren mayor rapidez.
+        </p>
+
+        <div class="service-price">
+          <span>Tarifa referencial desde</span>
+          <strong>$4.990 <small>CLP</small></strong>
+        </div>
+
+        <div class="service-footer">
+          <span>Según origen y destino</span>
+          <span class="service-arrow" aria-hidden="true">↗</span>
+        </div>
+      </article>
+
+      <article class="service-card">
+        <div class="service-card-top">
+          <span class="service-icon day-icon">◷</span>
+          <span class="service-index">02 / 03</span>
+        </div>
+
+        <h3>Mismo Día</h3>
+
+        <p>
+          Opciones de entrega durante el mismo día,
+          sujetas a cobertura y disponibilidad.
+        </p>
+
+        <div class="service-price">
+          <span>Tarifa referencial desde</span>
+          <strong>$3.490 <small>CLP</small></strong>
+        </div>
+
+        <div class="service-footer">
+          <span>Según disponibilidad</span>
+          <span class="service-arrow" aria-hidden="true">↗</span>
+        </div>
+      </article>
+
+      <article class="service-card">
+        <div class="service-card-top">
+          <span class="service-icon standard-icon">▣</span>
+          <span class="service-index">03 / 03</span>
+        </div>
+
+        <h3>Estándar</h3>
+
+        <p>
+          Alternativas prácticas para envíos habituales
+          y entregas programadas.
+        </p>
+
+        <div class="service-price">
+          <span>Tarifa referencial desde</span>
+          <strong>$1.990 <small>CLP</small></strong>
+        </div>
+
+        <div class="service-footer">
+          <span>Según peso y destino</span>
+          <span class="service-arrow" aria-hidden="true">↗</span>
+        </div>
+      </article>
+    </div>
+
+    <p class="tariff-note">
+      Tarifas referenciales para fines académicos.
+      Los valores finales pueden variar según el courier,
+      origen, destino, peso y disponibilidad.
+    </p>
+  </section>
+
+  <section class="corporate" id="empresas">
+    <div class="corporate-content">
+      <span class="corporate-kicker">PORTAL CORPORATIVO</span>
+
+      <h2>
+        Tu operación logística,
+        <em>más conectada.</em>
+      </h2>
+
+      <p>
+        Accede a las herramientas de RutaExpress
+        para centralizar la gestión de tus envíos
+        y coordinar tus operaciones.
+      </p>
+
+      @if (nombreUsuario()) {
+        <button
+          type="button"
+          class="corporate-button"
+          (click)="irDashboard()">
+          Ir al dashboard
+          <span aria-hidden="true">→</span>
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="corporate-button microsoft-button"
+          (click)="iniciarSesion()"
+          aria-label="Acceso corporativo, iniciar sesión con Microsoft">
+
+          <svg
+            class="microsoft-logo"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false">
+            <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
+            <rect x="13" y="1" width="10" height="10" fill="#7FBA00"/>
+            <rect x="1" y="13" width="10" height="10" fill="#00A4EF"/>
+            <rect x="13" y="13" width="10" height="10" fill="#FFB900"/>
+          </svg>
+
+          <span>Acceso corporativo con Microsoft</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      }
+
+      <span class="corporate-note">
+        Autenticación empresarial mediante Microsoft Entra ID.
+      </span>
+    </div>
+
+    <div class="corporate-visual" aria-hidden="true">
+      <div class="corporate-orbit orbit-one"></div>
+      <div class="corporate-orbit orbit-two"></div>
+      <div class="corporate-center">R</div>
+      <span class="corporate-arrow">↗</span>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-main">
+    <div class="footer-about">
+      <strong class="footer-logo">
+        ruta<span>express</span><b>.</b>
+      </strong>
+
+      <p>
+        Plataforma tecnológica de gestión logística
+        para una red de operadores de última milla en Chile.
+      </p>
+    </div>
+
+    <div class="footer-column">
+      <h3>Explorar</h3>
+      <a href="#inicio">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#seguimiento">Seguimiento</a>
+      <a href="#empresas">Acceso corporativo</a>
+    </div>
+
+    <div class="footer-column">
+      <h3>Información institucional</h3>
+      <span>Soporte: contacto por confirmar</span>
+      <span>Estado operacional: por confirmar</span>
+      <span>Enlaces institucionales: pendientes</span>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <small>© 2026 RutaExpress. Proyecto académico.</small>
+    <small>Logística de última milla, conectada.</small>
+  </div>
+</footer>
