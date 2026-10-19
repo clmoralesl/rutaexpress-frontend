@@ -275,3 +275,19 @@
   </section>
 
 </section>
+@if (cargando) {
+  <app-skeleton [rows]="5"></app-skeleton>
+}
+@if (!cargando && !error && envios.length === 0) {
+  <app-empty-state
+    title="Sin envíos"
+    message="Aún no tienes envíos registrados.">
+  </app-empty-state>
+}
+<app-confirm-dialog
+  [visible]="confirmacionVisible"
+  title="Confirmar cambio de estado"
+  [message]="'¿Deseas cambiar el estado del envío a ' + estadoPendiente + '?'"
+  (confirmed)="confirmarCambio()"
+  (cancelled)="cancelarCambio()">
+</app-confirm-dialog>

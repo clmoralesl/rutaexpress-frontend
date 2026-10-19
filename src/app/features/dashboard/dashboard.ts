@@ -1,4 +1,5 @@
-﻿import { Component } from '@angular/core';
+import { ConfirmDialogComponent } from '../../shared/feedback/confirm-dialog.component';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -8,12 +9,13 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ConfirmDialogComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
 export class Dashboard {
 
+  confirmarSalida = false;
   nombreUsuario: string;
   rolActivo: string;
   respuestaApi: any;
@@ -31,6 +33,11 @@ export class Dashboard {
   }
 
   cerrarSesion(): void {
+    this.confirmarSalida = true;
+  }
+
+  confirmarCerrarSesion(): void {
+    this.confirmarSalida = false;
     this.authService.cerrarSesion();
   }
 
