@@ -60,7 +60,12 @@ export function msalGuardConfigFactory(): MsalGuardConfiguration {
 }
 
 export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const protectedResourceMap = new Map<string, Array<string>>();
+  const protectedResourceMap = new Map<string, Array<string> | null>();
+
+  protectedResourceMap.set(
+    `${environment.apiUrl}/api/publico/seguimiento/*`,
+    null
+  );
 
   protectedResourceMap.set(
     `${environment.apiUrl}/*`,
@@ -136,7 +141,7 @@ export const appConfig: ApplicationConfig = {
           tokenResult.accessToken
         );
 
-        // La navegación se realizará cuando Angular arranque.
+        // La navegaciÃƒÂ³n se realizarÃƒÂ¡ cuando Angular arranque.
         sessionStorage.setItem(
           'rutaexpress_login_completado',
           'true'
@@ -144,7 +149,7 @@ export const appConfig: ApplicationConfig = {
 
       } catch (error) {
         console.error(
-          'Error procesando la redirección de Microsoft',
+          'Error procesando la redirecciÃƒÂ³n de Microsoft',
           error
         );
       }
