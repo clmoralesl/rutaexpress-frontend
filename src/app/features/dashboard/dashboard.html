@@ -1,3 +1,4 @@
+
 <div class="layout">
 
   <header class="navbar">
@@ -11,6 +12,14 @@
     </div>
 
     <div class="usuario">
+
+      <a
+        routerLink="/"
+        class="btn-salir"
+        style="text-decoration: none; display: inline-flex; align-items: center;">
+        Inicio
+      </a>
+
       <div class="datos-usuario">
         <span class="nombre">{{ nombreUsuario }}</span>
         <span class="rol">{{ rolActivo }}</span>
@@ -22,16 +31,18 @@
         (click)="cerrarSesion()">
         Cerrar sesión
       </button>
+
     </div>
   </header>
-
 
   <aside class="sidebar">
 
     <p class="titulo-menu">MENÚ</p>
 
     <nav>
-      <a class="menu-item activo">
+      <a
+        class="menu-item activo"
+        routerLink="/dashboard">
         <span>▦</span>
         Dashboard
       </a>
@@ -57,12 +68,9 @@
         <span>▥</span>
         Reportería
       </a>
-
-      
     </nav>
 
   </aside>
-
 
   <main class="contenido">
 
@@ -76,20 +84,33 @@
 
     <section class="tarjeta">
       <h3>Sesión iniciada correctamente</h3>
+
       <p>
         Has ingresado correctamente al sistema RutaExpress.
       </p>
-      
+
       <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
-      
+
       <h4>Probar Conexión con AWS API Gateway (MSAL Interceptor)</h4>
-      <p>Presiona el botón para consumir un endpoint protegido. El Interceptor debería inyectar el Token silenciosamente.</p>
-      <button (click)="probarInterceptor()" style="padding: 10px 15px; margin-top: 10px; background-color: #0078D4; color: white; border: none; border-radius: 4px; cursor: pointer;">
+
+      <p>
+        Presiona el botón para consumir un endpoint protegido.
+        El Interceptor debería inyectar el token silenciosamente.
+      </p>
+
+      <button
+        type="button"
+        (click)="probarInterceptor()"
+        style="padding: 10px 15px; margin-top: 10px; background-color: #0078D4; color: white; border: none; border-radius: 4px; cursor: pointer;">
         Probar Endpoint /mis-envios
       </button>
 
-      <div *ngIf="respuestaApi" style="margin-top: 15px; background: #f4f4f4; padding: 15px; border-radius: 4px; font-family: monospace;">
-        <strong>Respuesta de Spring Boot (vía API Gateway):</strong><br>
+      <div
+        *ngIf="respuestaApi"
+        style="margin-top: 15px; background: #f4f4f4; padding: 15px; border-radius: 4px; font-family: monospace;">
+
+        <strong>Respuesta de Spring Boot (vía API Gateway):</strong>
+
         <pre>{{ respuestaApi | json }}</pre>
       </div>
     </section>
