@@ -1,38 +1,104 @@
-
-import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
+
+interface EventoSeguimiento {
+  estado: string;
+  fecha: string;
+}
+
+interface SeguimientoResponse {
+  codigoSeguimiento: string;
+  estadoActual: string;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  historial: EventoSeguimiento[];
+}
 
 @Component({
   selector: 'app-rastreo-provisional',
   standalone: true,
+  imports: [CommonModule, FormsModule],
   template: `
     <main class="pagina">
       <section class="tarjeta">
         <div class="marca">R</div>
-
         <p class="etiqueta">RUTAEXPRESS · SEGUIMIENTO</p>
-        <h1>Seguimiento de envío</h1>
+        <h1>Rastrea tu envío</h1>
+        <p class="subtitulo">Consulta el estado de tu paquete con su código de seguimiento.</p>
 
-        @if (codigo) {
-          <p>Tu código de seguimiento es:</p>
-
-          <div class="codigo">
-            {{ codigo }}
+        <form (ngSubmit)="buscar()" class="buscador">
+          <label for="codigo">Código de seguimiento</label>
+          <div class="fila">
+            <input
+              id="codigo"
+              name="codigo"
+              [(ngModel)]="codigo"
+              placeholder="Ingresa tu código"
+              maxlength="50"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" [disabled]="cargando">
+              {{ cargando ? 'Buscando...' : 'Rastrear' }}
+            </button>
           </div>
+        </form>
 
-          <p class="mensaje">
-            El código se recibió correctamente.
-            La consulta del estado del envío estará disponible
-            cuando se implemente el módulo de rastreo.
-          </p>
-        } @else {
-          <p class="mensaje">
-            No ingresaste un código de seguimiento.
-          </p>
+        @if (mensajeError) {
+          <div class="alerta" role="alert">{{ mensajeError }}</div>
         }
 
-        <button type="button" (click)="volverInicio()">
-          ← Volver al inicio
+        @if (resultado) {
+          <section class="resultado">
+            <p class="etiqueta">RESULTADO DEL SEGUIMIENTO</p>
+            <h2>{{ resultado.codigoSeguimiento }}</h2>
+            <p class="estado-actual">
+              Estado actual: <strong>{{ nombreEstado(resultado.estadoActual) }}</strong>
+            </p>
+
+            @if (resultado.estadoActual === 'CANCELADO') {
+              <div class="alerta">Este envío fue cancelado.</div>
+            } @else {
+              <div class="pasos">
+                @for (paso of pasos; track paso.codigo; let i = $index) {
+                  <div class="paso" [class.completado]="indiceActual() >= i"
+                       [class.actual]="resultado.estadoActual === paso.codigo">
+                    <div class="circulo">{{ indiceActual() >= i ? '✓' : i + 1 }}</div>
+                    <div>
+                      <strong>{{ paso.nombre }}</strong>
+                      @if (resultado.estadoActual === paso.codigo) {
+                        <span class="indicador">Estado actual</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <h3>Historial del envío</h3>
+            @if (resultado.historial.length > 0) {
+              <ul class="historial">
+                @for (evento of resultado.historial; track $index) {
+                  <li>
+                    <strong>{{ nombreEstado(evento.estado) }}</strong>
+                    <span>{{ evento.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="nota">El historial de movimientos aún no está disponible.</p>
+            }
+
+            <p class="nota">Creado: {{ resultado.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
+          </section>
+        }
+
+        <button class="volver" type="button" (click)="volverInicio()">
+          Volver al inicio
         </button>
       </section>
     </main>
@@ -124,14 +190,224 @@ import { ActivatedRoute, Router } from '@angular/router';
     button:hover {
       background: #e9520d;
     }
+
+    /* Ajustes del formulario y seguimiento */
+    .tarjeta {
+      max-width: 600px;
+      padding: 42px 36px;
+    }
+
+    .subtitulo {
+      color: #756b63;
+      line-height: 1.6;
+      margin: 16px 0 28px;
+    }
+
+    .buscador {
+      width: 100%;
+      margin: 24px 0;
+      text-align: left;
+    }
+
+    .buscador label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #282522;
+    }
+
+    .fila {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .fila input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px 16px;
+      border: 1px solid #e3d8ce;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 15px;
+    }
+
+    .fila button {
+      margin-top: 0;
+      white-space: nowrap;
+    }
+
+    .alerta {
+      padding: 14px 16px;
+      margin: 18px 0;
+      border-radius: 10px;
+      background: #fff0ed;
+      color: #b42318;
+      text-align: left;
+    }
+
+    .resultado {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #eee4da;
+      text-align: left;
+    }
+
+    .resultado h2 {
+      overflow-wrap: anywhere;
+      color: #282522;
+    }
+
+    .estado-actual {
+      padding: 14px;
+      border-radius: 10px;
+      background: #fff1e8;
+      color: #c94e13;
+    }
+
+    .pasos {
+      margin: 28px 0;
+    }
+
+    .paso {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 65px;
+      color: #94877e;
+    }
+
+    .paso.completado {
+      color: #282522;
+    }
+
+    .circulo {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: #eee4da;
+      color: #756b63;
+      font-weight: 700;
+    }
+
+    .completado .circulo {
+      background: #ff641c;
+      color: white;
+    }
+
+    .indicador {
+      display: block;
+      margin-top: 4px;
+      color: #d95517;
+      font-size: 12px;
+    }
+
+    .historial {
+      padding-left: 22px;
+    }
+
+    .historial li {
+      margin-bottom: 12px;
+    }
+
+    .historial span {
+      display: block;
+      color: #756b63;
+      font-size: 13px;
+    }
+
+    .nota {
+      color: #756b63;
+      line-height: 1.6;
+    }
+
+    .volver {
+      margin-top: 28px;
+    }
+
+    @media (max-width: 560px) {
+      .tarjeta {
+        padding: 32px 22px;
+      }
+
+      .fila {
+        flex-direction: column;
+      }
+
+      .fila button {
+        width: 100%;
+      }
+    }
   `]
 })
-export class RastreoProvisional {
-  private readonly ruta = inject(ActivatedRoute);
+export class RastreoProvisional implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  readonly codigo =
-    this.ruta.snapshot.queryParamMap.get('codigo')?.trim() ?? '';
+  codigo = '';
+  cargando = false;
+  mensajeError = '';
+  resultado: SeguimientoResponse | null = null;
+
+  readonly pasos = [
+    { codigo: 'CREADO', nombre: 'Envío creado' },
+    { codigo: 'ACEPTADO', nombre: 'Envío aceptado' },
+    { codigo: 'EN_BODEGA', nombre: 'En bodega' },
+    { codigo: 'EN_RUTA', nombre: 'En camino' },
+    { codigo: 'ENTREGADO', nombre: 'Entregado' }
+  ];
+
+  ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const codigoUrl = params.get('codigo');
+      if (codigoUrl) {
+        this.codigo = codigoUrl;
+        this.buscar();
+      }
+    });
+  }
+
+  buscar(): void {
+    const codigoLimpio = this.codigo.trim();
+    this.mensajeError = '';
+    this.resultado = null;
+
+    if (!/^[a-zA-Z0-9-]{4,50}$/.test(codigoLimpio)) {
+      this.mensajeError = 'Ingresa un código de seguimiento válido.';
+      return;
+    }
+
+    this.cargando = true;
+
+    this.http.get<SeguimientoResponse>(
+      `${environment.apiUrl}/api/publico/seguimiento/${encodeURIComponent(codigoLimpio)}`
+    ).subscribe({
+      next: respuesta => {
+        this.resultado = respuesta;
+        this.cargando = false;
+      },
+      error: (error: HttpErrorResponse) => {
+        this.cargando = false;
+        this.mensajeError = error.status === 404
+          ? 'El código de seguimiento no existe. Verifica que esté escrito correctamente.'
+          : 'No fue posible consultar el seguimiento. Inténtalo nuevamente.';
+      }
+    });
+  }
+
+  indiceActual(): number {
+    return this.pasos.findIndex(paso => paso.codigo === this.resultado?.estadoActual);
+  }
+
+  nombreEstado(estado: string): string {
+    return this.pasos.find(paso => paso.codigo === estado)?.nombre
+      ?? (estado === 'CANCELADO' ? 'Cancelado' : estado);
+  }
 
   volverInicio(): void {
     this.router.navigate(['/']);
