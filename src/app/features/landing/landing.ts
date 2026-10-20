@@ -8,7 +8,7 @@ import {
   signal
 } from '@angular/core';
 
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
 import { EventType, InteractionStatus } from '@azure/msal-browser';
 import { Subject, takeUntil, filter } from 'rxjs';
@@ -17,7 +17,7 @@ import { AuthService } from '../../core/auth/auth.service';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [],
+  imports: [RouterModule],
   templateUrl: './landing.html',
   styleUrl: './landing.scss'
 })

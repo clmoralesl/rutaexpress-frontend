@@ -68,7 +68,12 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   );
 
   protectedResourceMap.set(
-    `${environment.apiUrl}/*`,
+    `${environment.apiUrl}/api/bff/catalogo/servicios*`,
+    null
+  );
+
+  protectedResourceMap.set(
+    `${environment.apiUrl}/api/*`,
     environment.azure.scopes
   );
 

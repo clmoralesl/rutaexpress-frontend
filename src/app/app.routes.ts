@@ -7,6 +7,7 @@ import { Dashboard } from './features/dashboard/dashboard';
 import { Shipments } from './features/shipments/shipments';
 import { Landing } from './features/landing/landing';
 import { RastreoComponent } from './features/rastreo/rastreo.component';
+import { CatalogoComponent } from './features/catalogo/catalogo.component';
 
 export const routes: Routes = [
   {
@@ -25,6 +26,10 @@ export const routes: Routes = [
   {
     path: 'rastreo/:codigo',
     component: RastreoComponent
+  },
+  {
+    path: 'catalogo',
+    component: CatalogoComponent
   },
   {
     path: 'dashboard',

@@ -1,0 +1,675 @@
+<!-- Toast Global de Notificaciones -->
+<app-toast />
+
+<!-- Barra Superior de Navegacion -->
+<header class="barra-superior" role="banner">
+  <div class="contenedor-barra">
+    <a routerLink="/" class="logo-enlace" aria-label="Ir a la pagina de inicio de RutaExpress">
+      <div class="icono-marca">RE</div>
+      <div class="texto-marca">
+        <span class="nombre-marca">RutaExpress</span>
+        <span class="subtexto-marca">Catalogo & Flota</span>
+      </div>
+    </a>
+
+    <nav class="navegacion-superior" aria-label="Navegacion principal">
+      <a routerLink="/" class="enlace-nav">Inicio</a>
+      <a routerLink="/rastreo" class="enlace-nav">Rastreo</a>
+      <a routerLink="/dashboard" class="enlace-nav">Dashboard</a>
+      <a routerLink="/envios" class="enlace-nav">Envios</a>
+      <div class="rol-badge" [class.es-admin]="esAdmin()">
+        Rol: {{ authService.obtenerRolActivo() }}
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="contenedor-principal" role="main">
+
+  <!-- Encabezado de Pagina -->
+  <header class="encabezado-seccion">
+    <div class="titulos">
+      <nav class="migajas" aria-label="Ruta de navegacion">
+        <a routerLink="/dashboard">Dashboard</a>
+        <span class="separador">/</span>
+        <span class="actual">Catalogo & Capacidad</span>
+      </nav>
+      <h1 class="titulo-pagina">Catalogo de Servicios y Flota Logistica</h1>
+      <p class="descripcion-pagina">
+        Supervision de capacidad diaria, administracion de tarifas por tipo de vehiculo y cotizador en tiempo real.
+      </p>
+    </div>
+
+    <div class="acciones-encabezado">
+      @if (esAdmin()) {
+        <button type="button" class="btn btn-primario" (click)="abrirModalCrear()">
+          <svg class="icono-btn" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          Nuevo Servicio
+        </button>
+      } @else {
+        <div class="aviso-modo-lectura" title="Solo usuarios con rol Administrador pueden crear o editar servicios">
+          <span class="badge-lectura">Modo Consulta</span>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- Tarjetas KPI de Red y Capacidad -->
+  <section class="grid-resumen" aria-label="Metricas globales de la red">
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-servicios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Servicios Activos</span>
+        <strong class="valor-kpi">{{ totalServiciosActivos() }}</strong>
+        <span class="subtexto-kpi">De {{ servicios().length }} configurados</span>
+      </div>
+    </article>
+
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-capacidad">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="1" y="3" width="15" height="13" />
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Capacidad Diaria Total</span>
+        <strong class="valor-kpi">{{ capacidadTotalRed() }}</strong>
+        <span class="subtexto-kpi">Cupos de flota para recepcion</span>
+      </div>
+    </article>
+
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-disponibles">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Cupos Disponibles</span>
+        <strong class="valor-kpi">{{ cuposDisponiblesTotales() }}</strong>
+        <span class="subtexto-kpi">{{ cuposOcupadosTotales() }} cupos utilizados hoy</span>
+      </div>
+    </article>
+
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-salud">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Disponibilidad Global</span>
+        <strong class="valor-kpi">{{ porcentajeDisponibilidadGlobal() }}%</strong>
+        <div class="barra-mini">
+          <div class="progreso-mini" [style.width.%]="porcentajeDisponibilidadGlobal()"></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- Panel de Tabla Interactiva de Servicios -->
+  <section class="panel-catalogo">
+    <div class="cabecera-panel">
+      <div class="titulos-panel">
+        <h2 class="subtitulo-seccion">Servicios y Tarifas Vigentes</h2>
+        <div class="meta-panel">
+          <span class="contador-registros">{{ serviciosFiltrados().length }} resultado(s)</span>
+          <span class="insignia-origen" [class.origen-oracle]="origenDatos() === 'ORACLE_DB'" [class.origen-contingencia]="origenDatos() === 'CONTINGENCIA'">
+            {{ origenDatos() === 'ORACLE_DB' ? 'Base de Datos Oracle Cloud ATP (En Linea)' : 'Modo Contingencia Local' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Barra de Filtros y Busqueda -->
+      <div class="barra-filtros">
+        <div class="campo-busqueda">
+          <svg class="icono-busqueda" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Buscar por codigo o nombre de servicio..."
+            [value]="terminoBusqueda()"
+            (input)="terminoBusqueda.set($any($event.target).value)"
+            aria-label="Buscar servicios"
+          />
+        </div>
+
+        <div class="grupo-filtros">
+          <select
+            [value]="filtroVehiculo()"
+            (change)="filtroVehiculo.set($any($event.target).value)"
+            aria-label="Filtrar por vehiculo"
+            class="selector-filtro"
+          >
+            <option value="TODOS">Todos los vehiculos</option>
+            <option value="MOTO">Motocicletas</option>
+            <option value="FURGON">Furgones</option>
+            <option value="CAMION">Camiones</option>
+          </select>
+
+          <select
+            [value]="filtroEstado()"
+            (change)="filtroEstado.set($any($event.target).value)"
+            aria-label="Filtrar por estado"
+            class="selector-filtro"
+          >
+            <option value="TODOS">Todos los estados</option>
+            <option value="ACTIVO">Solo Activos</option>
+            <option value="INACTIVO">Solo Inactivos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado de Carga -->
+    @if (cargando()) {
+      <div class="contenedor-esqueleto">
+        <app-skeleton [rows]="4" />
+      </div>
+    } @else if (serviciosFiltrados().length === 0) {
+      <app-empty-state
+        title="Sin servicios encontrados"
+        message="No se encontraron servicios logísticos que coincidan con los filtros aplicados."
+      />
+    } @else {
+      <!-- Tabla de Datos -->
+      <div class="contenedor-tabla">
+        <table class="tabla-servicios" role="table">
+          <thead>
+            <tr>
+              <th scope="col">Codigo</th>
+              <th scope="col">Servicio Logistico</th>
+              <th scope="col">Vehiculo</th>
+              <th scope="col" class="texto-derecha">Tarifa Base</th>
+              <th scope="col" class="texto-derecha">Precio / Kg</th>
+              <th scope="col">Capacidad Diaria (Flota)</th>
+              <th scope="col" class="texto-centro">Estado</th>
+              <th scope="col" class="texto-centro">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (servicio of serviciosFiltrados(); track servicio.id) {
+              <tr [class.fila-inactiva]="!servicio.activo">
+                <!-- Codigo -->
+                <td>
+                  <span class="badge-codigo">{{ servicio.codigo }}</span>
+                </td>
+
+                <!-- Servicio & Descripcion -->
+                <td>
+                  <div class="nombre-servicio">{{ servicio.nombre }}</div>
+                  @if (servicio.descripcion) {
+                    <div class="descripcion-servicio">{{ servicio.descripcion }}</div>
+                  }
+                </td>
+
+                <!-- Tipo de Vehiculo -->
+                <td>
+                  <span class="badge-vehiculo" [class]="'vehiculo-' + servicio.tipoVehiculo.toLowerCase()">
+                    {{ obtenerEtiquetaVehiculo(servicio.tipoVehiculo) }}
+                  </span>
+                </td>
+
+                <!-- Tarifa Base -->
+                <td class="texto-derecha">
+                  <span class="monto-destacado">{{ formatearMoneda(servicio.tarifaBase) }}</span>
+                </td>
+
+                <!-- Precio por Kg -->
+                <td class="texto-derecha">
+                  <span class="monto-secundario">{{ formatearMoneda(servicio.precioPorKg) }}</span>
+                  <span class="unidad-kg">/kg</span>
+                </td>
+
+                <!-- Capacidad Diaria & Alerta < 20% -->
+                <td>
+                  <div class="bloque-capacidad">
+                    <div class="encabezado-capacidad">
+                      <span class="cupos-texto">
+                        <strong>{{ servicio.capacidadDisponible }}</strong> de {{ servicio.capacidadMaximaDiaria }} cupos
+                      </span>
+                      <span class="porcentaje-texto" [class]="'texto-' + obtenerNivelCapacidad(servicio)">
+                        {{ calcularPorcentajeDisponible(servicio) }}% libre
+                      </span>
+                    </div>
+
+                    <div class="barra-progreso" role="progressbar"
+                         [attr.aria-valuenow]="calcularPorcentajeDisponible(servicio)"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                      <div
+                        class="barra-llenado"
+                        [class]="'llenado-' + obtenerNivelCapacidad(servicio)"
+                        [style.width.%]="calcularPorcentajeDisponible(servicio)">
+                      </div>
+                    </div>
+
+                    @if (obtenerNivelCapacidad(servicio) === 'critica') {
+                      <div class="alerta-capacidad-critica" role="alert">
+                        Capacidad Critica (&lt;20%)
+                      </div>
+                    } @else if (obtenerNivelCapacidad(servicio) === 'advertencia') {
+                      <div class="alerta-capacidad-advertencia">
+                        Capacidad Moderada (&lt;40%)
+                      </div>
+                    }
+                  </div>
+                </td>
+
+                <!-- Estado Activo / Inactivo -->
+                <td class="texto-centro">
+                  @if (servicio.activo) {
+                    <span class="badge-estado badge-activo">Activo</span>
+                  } @else {
+                    <span class="badge-estado badge-inactivo">Inactivo</span>
+                  }
+                </td>
+
+                <!-- Acciones -->
+                <td class="texto-centro">
+                  <div class="botones-accion">
+                    <button
+                      type="button"
+                      class="btn-icono btn-cotizar"
+                      (click)="seleccionarServicioParaCotizar(servicio)"
+                      title="Cotizar con este servicio"
+                      aria-label="Cotizar con este servicio"
+                    >
+                      <svg viewBox="0 0 20 20" fill="currentColor" class="icono-accion">
+                        <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 1a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm4-1a1 1 0 100 2h.01a1 1 0 100-2H13zM7 8a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm2 1a1 1 0 100-2h.01a1 1 0 100 2H9zm3-1a1 1 0 011-1h.01a1 1 0 110 2H13a1 1 0 01-1-1z" clip-rule="evenodd" />
+                      </svg>
+                      Cotizar
+                    </button>
+
+                    @if (esAdmin()) {
+                      <button
+                        type="button"
+                        class="btn-icono btn-editar"
+                        (click)="abrirModalEditar(servicio)"
+                        title="Editar tarifas y capacidad"
+                        aria-label="Editar servicio"
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" class="icono-accion">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        Editar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <!-- Seccion Tarifador Rapido (Calculadora de Envios) -->
+  <section class="panel-tarifador" id="seccion-tarifador" aria-labelledby="titulo-tarifador">
+    <div class="cabecera-tarifador">
+      <div class="icono-cabecera-tarifador">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="2" width="16" height="20" rx="2" />
+          <line x1="8" y1="6" x2="16" y2="6" />
+          <line x1="16" y1="14" x2="16" y2="18" />
+          <path d="M16 10h.01" />
+          <path d="M12 10h.01" />
+          <path d="M8 10h.01" />
+          <path d="M12 14h.01" />
+          <path d="M8 14h.01" />
+          <path d="M12 18h.01" />
+          <path d="M8 18h.01" />
+        </svg>
+      </div>
+      <div>
+        <h2 id="titulo-tarifador" class="subtitulo-seccion">Tarifador Rapido: Calculadora de Envios</h2>
+        <p class="descripcion-seccion">Calcule al instante el costo estimado de transporte segun peso y volumen.</p>
+      </div>
+    </div>
+
+    <div class="grid-tarifador">
+      <!-- Columna Izquierda: Parametros de Calculo -->
+      <div class="formulario-tarifador">
+        <!-- Selector de Servicio -->
+        <div class="campo">
+          <label for="cot-servicio">Servicio Logistico</label>
+          <select
+            id="cot-servicio"
+            [value]="cotizacionServicioId()"
+            (change)="cotizacionServicioId.set(+$any($event.target).value)"
+            class="input-control"
+          >
+            @for (servicio of servicios(); track servicio.id) {
+              <option [value]="servicio.id" [disabled]="!servicio.activo">
+                {{ servicio.nombre }} - Base: {{ formatearMoneda(servicio.tarifaBase) }} ({{ servicio.tipoVehiculo }})
+              </option>
+            }
+          </select>
+        </div>
+
+        <!-- Peso en Kilogramos -->
+        <div class="campo">
+          <label for="cot-peso">
+            Peso del Paquete (Kg)
+            <span class="subetiqueta">Minimo 0.1 kg</span>
+          </label>
+          <div class="control-peso">
+            <button type="button" class="btn-ajuste" (click)="ajustarPeso(-0.5)" aria-label="Restar 0.5 kilos">-</button>
+            <input
+              type="number"
+              id="cot-peso"
+              [value]="cotizacionPeso()"
+              (input)="cotizacionPeso.set(+$any($event.target).value)"
+              min="0.1"
+              max="500"
+              step="0.1"
+              class="input-peso"
+            />
+            <button type="button" class="btn-ajuste" (click)="ajustarPeso(0.5)" aria-label="Sumar 0.5 kilos">+</button>
+          </div>
+
+          <!-- Botones de Presets de Peso -->
+          <div class="chips-peso" aria-label="Pesos frecuentes">
+            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 0.5" (click)="fijarPeso(0.5)">0.5 kg</button>
+            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 1" (click)="fijarPeso(1)">1 kg</button>
+            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 3" (click)="fijarPeso(3)">3 kg</button>
+            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 5" (click)="fijarPeso(5)">5 kg</button>
+            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 15" (click)="fijarPeso(15)">15 kg</button>
+            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 30" (click)="fijarPeso(30)">30 kg</button>
+          </div>
+        </div>
+
+        <!-- Toggle Dimensiones Volumetricas -->
+        <div class="campo-toggle">
+          <label class="switch-contenedor">
+            <input
+              type="checkbox"
+              [checked]="incluirDimensiones()"
+              (change)="incluirDimensiones.set($any($event.target).checked)"
+            />
+            <span class="switch-slider"></span>
+          </label>
+          <span class="texto-toggle">Calcular peso volumetrico por dimensiones (L x A x H / 5000)</span>
+        </div>
+
+        @if (incluirDimensiones()) {
+          <div class="grid-dimensiones">
+            <div class="campo">
+              <label for="cot-largo">Largo (cm)</label>
+              <input
+                type="number"
+                id="cot-largo"
+                min="1"
+                placeholder="Ej: 30"
+                [value]="cotizacionLargo()"
+                (input)="cotizacionLargo.set(+$any($event.target).value)"
+                class="input-control"
+              />
+            </div>
+            <div class="campo">
+              <label for="cot-ancho">Ancho (cm)</label>
+              <input
+                type="number"
+                id="cot-ancho"
+                min="1"
+                placeholder="Ej: 20"
+                [value]="cotizacionAncho()"
+                (input)="cotizacionAncho.set(+$any($event.target).value)"
+                class="input-control"
+              />
+            </div>
+            <div class="campo">
+              <label for="cot-alto">Alto (cm)</label>
+              <input
+                type="number"
+                id="cot-alto"
+                min="1"
+                placeholder="Ej: 15"
+                [value]="cotizacionAlto()"
+                (input)="cotizacionAlto.set(+$any($event.target).value)"
+                class="input-control"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Columna Derecha: Tarjeta de Cotizacion en Vivo -->
+      <div class="resultado-tarifador">
+        @if (cotizacionActual(); as cot) {
+          <div class="tarjeta-cotizacion">
+            <div class="cabecera-tarjeta-cotizacion">
+              <span class="etiqueta-cotizacion">Cotizacion Estimada</span>
+              <span class="badge-vehiculo-cotizacion">{{ cot.servicio.tipoVehiculo }}</span>
+            </div>
+
+            <div class="nombre-servicio-cotizacion">{{ cot.servicio.nombre }}</div>
+
+            <!-- Desglose de Calculo -->
+            <div class="desglose-lineas">
+              <div class="linea-desglose">
+                <span>Tarifa Base del Servicio:</span>
+                <strong>{{ formatearMoneda(cot.tarifaBase) }}</strong>
+              </div>
+
+              <div class="linea-desglose">
+                <span>
+                  Recargo por Kilo ({{ cot.pesoFacturadoKg }} kg x {{ formatearMoneda(cot.servicio.precioPorKg) }}):
+                </span>
+                <strong>{{ formatearMoneda(cot.costoVariablePeso) }}</strong>
+              </div>
+
+              @if (cot.pesoVolumetricoKg > 0) {
+                <div class="linea-desglose nota-volumetrica">
+                  <span>Peso Real / Volumetrico:</span>
+                  <span>{{ cot.pesoRealKg }} kg / {{ cot.pesoVolumetricoKg }} kg (aplica el mayor)</span>
+                </div>
+              }
+
+              <div class="linea-desglose">
+                <span>Capacidad del Servicio Hoy:</span>
+                @if (cot.servicio.capacidadDisponible > 0) {
+                  <span class="disponibilidad-ok">{{ cot.servicio.capacidadDisponible }} cupos libres</span>
+                } @else {
+                  <span class="disponibilidad-agotada">Cupos Agotados</span>
+                }
+              </div>
+            </div>
+
+            <hr class="divisor-cotizacion" />
+
+            <!-- Total Destacado -->
+            <div class="bloque-total-cotizacion">
+              <span class="etiqueta-total">Total Estimado (IVA incl.)</span>
+              <div class="monto-total">{{ formatearMoneda(cot.costoTotalEstimado) }}</div>
+            </div>
+
+            <div class="acciones-cotizacion">
+              <button type="button" class="btn btn-copiar" (click)="copiarCotizacion()">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="icono-btn">
+                  <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                  <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-2V5H5v14a1 1 0 01-1-1V5z" />
+                  <path d="M7 11a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H8a1 1 0 01-1-1v-6z" />
+                </svg>
+                Copiar Cotizacion
+              </button>
+
+              <a routerLink="/envios" class="btn btn-primario btn-crear-envio">
+                Crear Envio con este Servicio
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Reactivo de Creacion / Edicion (Restringido a ROLE_ADMIN) -->
+  @if (modalVisible()) {
+    <div class="modal-backdrop" (click)="cerrarModal()" role="presentation">
+      <div class="modal-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <header class="modal-header">
+          <div class="modal-titulos">
+            <h2 id="modal-titulo" class="modal-titulo">
+              {{ modoEdicion() ? 'Editar Servicio Logistico' : 'Nuevo Servicio Logistico' }}
+            </h2>
+            <p class="modal-subtitulo">
+              Configure las tarifas por peso y la asignacion maxima de cupos diarios para la flota.
+            </p>
+          </div>
+          <button type="button" class="btn-cerrar-modal" (click)="cerrarModal()" aria-label="Cerrar ventana">
+            &times;
+          </button>
+        </header>
+
+        <form [formGroup]="servicioForm" (ngSubmit)="guardarServicio()" class="modal-cuerpo" novalidate>
+          <div class="grid-formulario-modal">
+            <!-- Codigo -->
+            <div class="campo">
+              <label for="modal-codigo">
+                Codigo Unico *
+                <span class="subetiqueta">(Ej: EXPRESS-24H)</span>
+              </label>
+              <input
+                type="text"
+                id="modal-codigo"
+                formControlName="codigo"
+                class="input-control"
+                [class.invalido]="servicioForm.get('codigo')?.invalid && servicioForm.get('codigo')?.touched"
+                placeholder="CODIGO_SERVICIO"
+              />
+              @if (servicioForm.get('codigo')?.invalid && servicioForm.get('codigo')?.touched) {
+                <span class="error-campo">El codigo es obligatorio (maximo 50 caracteres).</span>
+              }
+            </div>
+
+            <!-- Nombre -->
+            <div class="campo">
+              <label for="modal-nombre">Nombre del Servicio *</label>
+              <input
+                type="text"
+                id="modal-nombre"
+                formControlName="nombre"
+                class="input-control"
+                [class.invalido]="servicioForm.get('nombre')?.invalid && servicioForm.get('nombre')?.touched"
+                placeholder="Nombre descriptivo"
+              />
+              @if (servicioForm.get('nombre')?.invalid && servicioForm.get('nombre')?.touched) {
+                <span class="error-campo">El nombre es obligatorio (maximo 100 caracteres).</span>
+              }
+            </div>
+
+            <!-- Tipo de Vehiculo -->
+            <div class="campo">
+              <label for="modal-vehiculo">Tipo de Vehiculo *</label>
+              <select id="modal-vehiculo" formControlName="tipoVehiculo" class="input-control">
+                <option value="MOTO">MOTO - Motocicleta Ligera</option>
+                <option value="FURGON">FURGON - Utilitario Urbano</option>
+                <option value="CAMION">CAMION - Carga Pesada</option>
+              </select>
+            </div>
+
+            <!-- Capacidad Maxima Diaria -->
+            <div class="campo">
+              <label for="modal-capacidad">Capacidad Maxima Diaria (Cupos) *</label>
+              <input
+                type="number"
+                id="modal-capacidad"
+                formControlName="capacidadMaximaDiaria"
+                min="1"
+                class="input-control"
+                [class.invalido]="servicioForm.get('capacidadMaximaDiaria')?.invalid && servicioForm.get('capacidadMaximaDiaria')?.touched"
+              />
+              @if (servicioForm.get('capacidadMaximaDiaria')?.invalid && servicioForm.get('capacidadMaximaDiaria')?.touched) {
+                <span class="error-campo">Debe ser un numero entero mayor o igual a 1.</span>
+              }
+            </div>
+
+            <!-- Tarifa Base -->
+            <div class="campo">
+              <label for="modal-tarifa-base">Tarifa Base ($ CLP) *</label>
+              <input
+                type="number"
+                id="modal-tarifa-base"
+                formControlName="tarifaBase"
+                min="0"
+                class="input-control"
+                [class.invalido]="servicioForm.get('tarifaBase')?.invalid && servicioForm.get('tarifaBase')?.touched"
+              />
+              @if (servicioForm.get('tarifaBase')?.invalid && servicioForm.get('tarifaBase')?.touched) {
+                <span class="error-campo">La tarifa base debe ser positiva o cero.</span>
+              }
+            </div>
+
+            <!-- Precio por Kg -->
+            <div class="campo">
+              <label for="modal-precio-kg">Precio por Kilo ($ CLP/kg) *</label>
+              <input
+                type="number"
+                id="modal-precio-kg"
+                formControlName="precioPorKg"
+                min="0"
+                class="input-control"
+                [class.invalido]="servicioForm.get('precioPorKg')?.invalid && servicioForm.get('precioPorKg')?.touched"
+              />
+              @if (servicioForm.get('precioPorKg')?.invalid && servicioForm.get('precioPorKg')?.touched) {
+                <span class="error-campo">El precio por kilo debe ser positivo o cero.</span>
+              }
+            </div>
+
+            <!-- Descripcion -->
+            <div class="campo campo-completo">
+              <label for="modal-descripcion">Descripcion Operacional</label>
+              <textarea
+                id="modal-descripcion"
+                formControlName="descripcion"
+                rows="3"
+                class="input-control"
+                placeholder="Detalles sobre cobertura, plazos de entrega y restricciones de embalaje..."
+              ></textarea>
+            </div>
+
+            <!-- Activo / Inactivo -->
+            @if (modoEdicion()) {
+              <div class="campo campo-completo campo-switch">
+                <label class="switch-contenedor">
+                  <input type="checkbox" formControlName="activo" />
+                  <span class="switch-slider"></span>
+                </label>
+                <span class="texto-toggle">Servicio Activo para Operaciones</span>
+              </div>
+            }
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-secundario" (click)="cerrarModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primario" [disabled]="guardando() || servicioForm.invalid">
+              @if (guardando()) {
+                <span>Guardando...</span>
+              } @else {
+                <span>{{ modoEdicion() ? 'Actualizar Tarifa' : 'Guardar Servicio' }}</span>
+              }
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+</main>
