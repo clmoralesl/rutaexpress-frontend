@@ -13,11 +13,20 @@ import {
   FiltrosEnvios
 } from '../../core/services/envios.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { EtiquetaModalComponent } from './components/etiqueta-modal/etiqueta-modal.component';
 
 @Component({
   selector: 'app-shipments',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SkeletonComponent, EmptyStateComponent, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SkeletonComponent,
+    EmptyStateComponent,
+    ConfirmDialogComponent,
+    EtiquetaModalComponent
+  ],
   templateUrl: './shipments.html',
   styleUrl: './shipments.css'
 })
@@ -30,6 +39,10 @@ export class Shipments implements OnInit {
   cargando = false;
   error = '';
   mensaje = '';
+
+  etiquetaModalVisible = false;
+  envioSeleccionadoEtiqueta: Envio | null = null;
+  encoladoRabbitMQ = false;
 
   estado = '';
   fechaDesde = '';
@@ -178,5 +191,41 @@ export class Shipments implements OnInit {
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.cargarEnvios();
+  }
+
+  abrirEtiqueta(envio: Envio): void {
+    this.envioSeleccionadoEtiqueta = envio;
+    this.encoladoRabbitMQ = false;
+    this.etiquetaModalVisible = true;
+
+    // Disparar procesamiento asincrono hacia RabbitMQ (cola q.cmd.label)
+    this.enviosService.solicitarEtiqueta(envio.id).subscribe({
+      next: () => {
+        this.encoladoRabbitMQ = true;
+        this.notifications.info(`Comando de rotulado para ${envio.codigoSeguimiento} registrado en RabbitMQ.`);
+      },
+      error: () => {
+        // En caso de contingencia o demora de red, la previsualizacion e impresion local permanecen activas
+        this.encoladoRabbitMQ = false;
+      }
+    });
+  }
+
+  cerrarEtiqueta(): void {
+    this.etiquetaModalVisible = false;
+    this.envioSeleccionadoEtiqueta = null;
+  }
+
+  reintentarEncolado(envio: Envio): void {
+    this.enviosService.solicitarEtiqueta(envio.id).subscribe({
+      next: () => {
+        this.encoladoRabbitMQ = true;
+        this.notifications.success(`Comando despachado a la cola RabbitMQ.`);
+      },
+      error: () => {
+        this.encoladoRabbitMQ = false;
+        this.notifications.warning(`No fue posible reencolar la solicitud en este momento.`);
+      }
+    });
   }
 }
