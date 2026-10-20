@@ -1,0 +1,474 @@
+<!-- Notificaciones Toast Globales -->
+<app-toast />
+
+<!-- Barra Superior de Navegacion -->
+<header class="barra-superior" role="banner">
+  <div class="contenedor-barra">
+    <a routerLink="/" class="logo-enlace" aria-label="Ir a la pagina de inicio de RutaExpress">
+      <div class="icono-marca">RE</div>
+      <div class="texto-marca">
+        <span class="nombre-marca">RutaExpress</span>
+        <span class="subtexto-marca">Analitica & KPIs</span>
+      </div>
+    </a>
+
+    <nav class="navegacion-superior" aria-label="Navegacion principal">
+      <a routerLink="/" class="enlace-nav">Inicio</a>
+      <a routerLink="/rastreo" class="enlace-nav">Rastreo</a>
+      <a routerLink="/catalogo" class="enlace-nav">Catalogo</a>
+      <a routerLink="/auditoria" class="enlace-nav">Auditoria</a>
+      <a routerLink="/reportes" class="enlace-nav activo">Reportes</a>
+      <a routerLink="/dashboard" class="enlace-nav">Dashboard</a>
+      <a routerLink="/envios" class="enlace-nav">Envios</a>
+      <div class="rol-badge" [class.es-admin]="esAdminOOperador()">
+        Rol: {{ authService.obtenerRolActivo() }}
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="contenedor-principal" role="main">
+
+  <!-- Encabezado de Seccion y Controles de Rango -->
+  <header class="encabezado-seccion">
+    <div class="titulos">
+      <nav class="migajas" aria-label="Ruta de navegacion">
+        <a routerLink="/dashboard">Dashboard</a>
+        <span class="separador">/</span>
+        <span class="actual">Reporteria Analitica</span>
+      </nav>
+      <h1 class="titulo-pagina">Panel de Inteligencia Operacional y Metricas</h1>
+      <p class="descripcion-pagina">
+        Supervision de rendimiento logistico, distribucion de flota, tiempos de transito y volumen de envios en tiempo real.
+      </p>
+    </div>
+
+    <div class="acciones-encabezado">
+      <div class="origen-datos-badge" [class.es-online]="origenDatos() === 'MOTOR_ANALITICO'">
+        <span class="punto-estado"></span>
+        <span class="texto-origen">
+          {{ origenDatos() === 'MOTOR_ANALITICO' ? 'Motor Analitico Kafka (En Linea)' : 'Modo Contingencia Local' }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-secundario"
+        (click)="cargarReportes(rangoSeleccionado())"
+        title="Actualizar datos analiticos desde el servidor">
+        <svg class="icono-btn" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+        </svg>
+        Refrescar
+      </button>
+    </div>
+  </header>
+
+  <!-- Selector de Rango Temporal -->
+  <section class="barra-selector-rango" aria-label="Selector de periodo analitico">
+    <span class="etiqueta-selector">Periodo de analisis:</span>
+    <div class="grupo-botones-rango" role="group" aria-label="Filtro por rango temporal">
+      <button
+        type="button"
+        class="btn-rango"
+        [class.activo]="rangoSeleccionado() === 'ultimas24h'"
+        (click)="cambiarRango('ultimas24h')">
+        Ultimas 24 Horas
+      </button>
+      <button
+        type="button"
+        class="btn-rango"
+        [class.activo]="rangoSeleccionado() === 'ultimos7dias'"
+        (click)="cambiarRango('ultimos7dias')">
+        Ultimos 7 Dias
+      </button>
+      <button
+        type="button"
+        class="btn-rango"
+        [class.activo]="rangoSeleccionado() === 'ultimomes'"
+        (click)="cambiarRango('ultimomes')">
+        Ultimo Mes (30 dias)
+      </button>
+      <button
+        type="button"
+        class="btn-rango"
+        [class.activo]="rangoSeleccionado() === 'historico'"
+        (click)="cambiarRango('historico')">
+        Historico / Todo
+      </button>
+    </div>
+  </section>
+
+  <!-- Estado de Carga -->
+  @if (cargando()) {
+    <div class="contenedor-esqueletos" aria-live="polite">
+      <div class="grid-esqueletos-kpi">
+        <app-skeleton height="110px" />
+        <app-skeleton height="110px" />
+        <app-skeleton height="110px" />
+        <app-skeleton height="110px" />
+      </div>
+      <app-skeleton height="320px" />
+      <app-skeleton height="320px" />
+    </div>
+  }
+
+  <!-- Contenido Analitico Cargado -->
+  @if (!cargando() && kpis()) {
+
+    <!-- Tarjetas KPI Destacadas en la Parte Superior -->
+    <section class="grid-resumen-kpis" aria-label="Metricas operacionales clave">
+      <article class="tarjeta-kpi">
+        <div class="icono-kpi icono-lead-time">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="cuerpo-kpi">
+          <span class="etiqueta-kpi">Lead Time Promedio</span>
+          <strong class="valor-kpi">{{ leadTimeFormateado() }}</strong>
+          <span class="subtexto-kpi">Tiempo de entrega origen a destino</span>
+        </div>
+      </article>
+
+      <article class="tarjeta-kpi">
+        <div class="icono-kpi icono-cumplimiento">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="cuerpo-kpi">
+          <span class="etiqueta-kpi">Tasa de Cumplimiento</span>
+          <strong class="valor-kpi">{{ tasaCumplimientoFormateada() }}</strong>
+          <span class="subtexto-kpi">Entregas exitosas sobre cerrados</span>
+        </div>
+      </article>
+
+      <article class="tarjeta-kpi">
+        <div class="icono-kpi icono-activos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+        </div>
+        <div class="cuerpo-kpi">
+          <span class="etiqueta-kpi">Envios Totales / Activos</span>
+          <strong class="valor-kpi">{{ kpis()!.totalEnvios }} / {{ kpis()!.totalActivos }}</strong>
+          <span class="subtexto-kpi">{{ kpis()!.totalActivos }} paquetes en ruta o bodega</span>
+        </div>
+      </article>
+
+      <article class="tarjeta-kpi">
+        <div class="icono-kpi icono-facturacion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="cuerpo-kpi">
+          <span class="etiqueta-kpi">Facturacion Estimada</span>
+          <strong class="valor-kpi">{{ facturacionEstimadaFormateada() }}</strong>
+          <span class="subtexto-kpi">Basada en entregas completadas</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- Grilla de Graficos Analiticos -->
+    <div class="grid-graficos">
+
+      <!-- ===================================================================== -->
+      <!-- GRAFICO 1: VOLUMEN DE ENVIOS POR HORA / INTERVALO (LINEAS Y BARRAS) -->
+      <!-- ===================================================================== -->
+      <section class="tarjeta-grafico span-2" aria-label="Grafico de volumen de envios por hora">
+        <div class="cabecera-tarjeta-grafico">
+          <div>
+            <h2 class="titulo-grafico">Volumen de Envíos por Intervalo de Tiempo</h2>
+            <p class="subtitulo-grafico">
+              Demanda y flujo de despachos registrados durante {{ obtenerEtiquetaRango(rangoSeleccionado()) | lowercase }}.
+            </p>
+          </div>
+          <div class="leyenda-volumen">
+            <span class="indicador-leyenda barra"></span> Barra: Despachos registrados
+            <span class="indicador-leyenda linea"></span> Curva: Tendencia analitica
+          </div>
+        </div>
+
+        @if (datosGraficoVolumen().puntos.length > 0) {
+          <div class="contenedor-svg-volumen">
+            <svg
+              viewBox="0 0 620 240"
+              preserveAspectRatio="xMidYMid meet"
+              class="svg-grafico-volumen"
+              role="img"
+              aria-label="Grafico de lineas y barras que muestra la evolucion temporal del volumen de envios">
+
+              <!-- Definicion de Gradientes Vectoriales -->
+              <defs>
+                <linearGradient id="gradienteArea" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#ff641c" stop-opacity="0.32" />
+                  <stop offset="100%" stop-color="#ff641c" stop-opacity="0.02" />
+                </linearGradient>
+                <linearGradient id="gradienteBarra" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#ff641c" stop-opacity="0.85" />
+                  <stop offset="100%" stop-color="#e05310" stop-opacity="0.55" />
+                </linearGradient>
+              </defs>
+
+              <!-- Lineas Guia Horizontales y Escala Eje Y -->
+              @for (guia of datosGraficoVolumen().lineasGuia; track guia.valor) {
+                <line
+                  x1="45"
+                  [attr.y1]="guia.y"
+                  x2="600"
+                  [attr.y2]="guia.y"
+                  class="linea-guia"
+                />
+                <text
+                  x="38"
+                  [attr.y]="guia.y + 4"
+                  text-anchor="end"
+                  class="texto-eje-y">
+                  {{ guia.valor }}
+                </text>
+              }
+
+              <!-- Barras de Volumen Horario -->
+              @for (p of datosGraficoVolumen().puntos; track p.item.hora) {
+                <rect
+                  [attr.x]="p.barX"
+                  [attr.y]="p.barY"
+                  [attr.width]="p.barWidth"
+                  [attr.height]="p.barHeight"
+                  rx="3"
+                  class="barra-volumen"
+                  [class.barra-activa]="puntoSeleccionadoVolumen()?.hora === p.item.hora"
+                  (mouseenter)="puntoSeleccionadoVolumen.set(p.item)"
+                  (mouseleave)="puntoSeleccionadoVolumen.set(null)"
+                />
+              }
+
+              <!-- Area Sombreada bajo la Curva -->
+              <path
+                [attr.d]="datosGraficoVolumen().pathArea"
+                fill="url(#gradienteArea)"
+              />
+
+              <!-- Linea Continua de Tendencia Bézier -->
+              <path
+                [attr.d]="datosGraficoVolumen().pathLinea"
+                fill="none"
+                class="linea-tendencia"
+              />
+
+              <!-- Puntos Interactivos y Etiquetas del Eje X -->
+              @for (p of datosGraficoVolumen().puntos; track p.item.hora) {
+                <!-- Punto en la curva -->
+                <circle
+                  [attr.cx]="p.x"
+                  [attr.cy]="p.y"
+                  r="4"
+                  class="punto-curva"
+                  [class.punto-activo]="puntoSeleccionadoVolumen()?.hora === p.item.hora"
+                  (mouseenter)="puntoSeleccionadoVolumen.set(p.item)"
+                  (mouseleave)="puntoSeleccionadoVolumen.set(null)"
+                />
+
+                <!-- Etiqueta de Hora en Eje X -->
+                <text
+                  [attr.x]="p.x"
+                  y="230"
+                  text-anchor="middle"
+                  class="texto-eje-x">
+                  {{ p.item.hora }}
+                </text>
+              }
+            </svg>
+
+            <!-- Tooltip Flotante Reactivo -->
+            @if (puntoSeleccionadoVolumen()) {
+              <div class="tooltip-volumen" role="status">
+                <span class="hora-tooltip">{{ puntoSeleccionadoVolumen()!.hora }}</span>
+                <strong class="cantidad-tooltip">{{ puntoSeleccionadoVolumen()!.cantidad }} envíos</strong>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="aviso-sin-datos-grafico">
+            No se registran despachos para este intervalo de tiempo.
+          </div>
+        }
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- GRAFICO 2: DISTRIBUCION POR ESTADO ACTIVO (DONA / PASTEL) -->
+      <!-- ===================================================================== -->
+      <section class="tarjeta-grafico" aria-label="Grafico de distribucion de envios por estado">
+        <div class="cabecera-tarjeta-grafico">
+          <div>
+            <h2 class="titulo-grafico">Distribución por Estado Logístico</h2>
+            <p class="subtitulo-grafico">Proporción de envíos en bodega, en ruta, entregados y cancelados.</p>
+          </div>
+        </div>
+
+        @if (segmentosDona().length > 0) {
+          <div class="cuerpo-grafico-dona">
+            <!-- Grafico de Dona SVG -->
+            <div class="contenedor-svg-dona">
+              <svg
+                viewBox="0 0 280 280"
+                class="svg-grafico-dona"
+                role="img"
+                aria-label="Grafico de dona que representa la distribucion porcentual de envios por estado">
+
+                @for (seg of segmentosDona(); track seg.estado) {
+                  <path
+                    [attr.d]="seg.pathD"
+                    [attr.fill]="seg.color"
+                    class="segmento-arco"
+                    [class.segmento-resaltado]="estadoSeleccionado() === seg.estado"
+                    (mouseenter)="estadoSeleccionado.set(seg.estado)"
+                    (mouseleave)="estadoSeleccionado.set(null)"
+                  />
+                }
+
+                <!-- Centro de la Dona con Resumen Numerico -->
+                <circle cx="140" cy="140" r="58" class="centro-dona" />
+                <text x="140" y="132" text-anchor="middle" class="texto-centro-numero">
+                  {{ kpis()!.totalEnvios }}
+                </text>
+                <text x="140" y="152" text-anchor="middle" class="texto-centro-etiqueta">
+                  Total Envíos
+                </text>
+              </svg>
+            </div>
+
+            <!-- Leyenda Interactiva con Porcentajes -->
+            <div class="leyenda-dona" role="list">
+              @for (seg of segmentosDona(); track seg.estado) {
+                <div
+                  class="item-leyenda"
+                  role="listitem"
+                  [class.activo]="estadoSeleccionado() === seg.estado"
+                  (mouseenter)="estadoSeleccionado.set(seg.estado)"
+                  (mouseleave)="estadoSeleccionado.set(null)">
+                  <span class="punto-color" [style.backgroundColor]="seg.color"></span>
+                  <div class="detalle-leyenda">
+                    <span class="nombre-estado">{{ seg.etiqueta }}</span>
+                    <span class="porcentaje-estado">{{ seg.porcentaje }}% ({{ seg.cantidad }})</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="aviso-sin-datos-grafico">
+            Sin estados disponibles para graficar en este periodo.
+          </div>
+        }
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- GRAFICO 3: TOP DE SERVICIOS MAS SOLICITADOS (BARRAS HORIZONTALES) -->
+      <!-- ===================================================================== -->
+      <section class="tarjeta-grafico" aria-label="Top de servicios mas solicitados">
+        <div class="cabecera-tarjeta-grafico">
+          <div>
+            <h2 class="titulo-grafico">Top Servicios Más Demandados</h2>
+            <p class="subtitulo-grafico">Participación sobre el total de despachos gestionados por la red.</p>
+          </div>
+        </div>
+
+        @if (topServicios().length > 0) {
+          <div class="lista-barras-horizontales">
+            @for (servicio of topServicios(); track servicio.servicioNombre; let i = $index) {
+              <div class="fila-barra-horizontal">
+                <div class="encabezado-fila-servicio">
+                  <div class="nombre-con-posicion">
+                    <span class="badge-posicion">#{{ i + 1 }}</span>
+                    <strong class="nombre-servicio">{{ servicio.servicioNombre }}</strong>
+                  </div>
+                  <div class="metricas-servicio">
+                    <span class="cantidad-servicio">{{ servicio.cantidadEnvios }} despachos</span>
+                    <strong class="porcentaje-servicio">{{ servicio.porcentajeTotal }}%</strong>
+                  </div>
+                </div>
+
+                <!-- Pista y Barra de Progreso Proporcional -->
+                <div class="pista-progreso" role="progressbar" [attr.aria-valuenow]="servicio.porcentajeTotal" aria-valuemin="0" aria-valuemax="100">
+                  <div
+                    class="barra-progreso-relleno"
+                    [style.width.%]="servicio.porcentajeTotal">
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="aviso-sin-datos-grafico">
+            No se registran servicios para el periodo seleccionado.
+          </div>
+        }
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TABLA 4: RENDIMIENTO OPERACIONAL POR COURIER Y OPERADOR -->
+      <!-- ===================================================================== -->
+      <section class="tarjeta-grafico span-2" aria-label="Rendimiento operacional de couriers y despachadores">
+        <div class="cabecera-tarjeta-grafico">
+          <div>
+            <h2 class="titulo-grafico">Rendimiento Operacional por Operador</h2>
+            <p class="subtitulo-grafico">
+              Efectividad de entrega, volumen gestionado y tasa de cancelaciones por usuario auditado.
+            </p>
+          </div>
+        </div>
+
+        @if (rendimientoCouriers().length > 0) {
+          <div class="tabla-contenedor">
+            <table class="tabla-rendimiento" role="table">
+              <thead>
+                <tr>
+                  <th scope="col">Operador / Courier</th>
+                  <th scope="col">Rol</th>
+                  <th scope="col" class="texto-derecha">Total Gestionados</th>
+                  <th scope="col" class="texto-derecha">Entregados</th>
+                  <th scope="col" class="texto-derecha">Cancelados</th>
+                  <th scope="col" class="texto-derecha">Tasa de Efectividad</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of rendimientoCouriers(); track c.usuarioEmail) {
+                  <tr>
+                    <td>
+                      <strong class="email-operador">{{ c.usuarioEmail }}</strong>
+                    </td>
+                    <td>
+                      <span class="badge-rol">{{ c.usuarioRol }}</span>
+                    </td>
+                    <td class="texto-derecha">{{ c.totalGestionados }}</td>
+                    <td class="texto-derecha texto-exito">{{ c.totalEntregados }}</td>
+                    <td class="texto-derecha texto-peligro">{{ c.totalCancelados }}</td>
+                    <td class="texto-derecha">
+                      <strong class="tasa-efectividad" [class.alta]="c.tasaEfectividad >= 90">
+                        {{ c.tasaEfectividad }}%
+                      </strong>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="aviso-sin-datos-grafico">
+            No se registran datos de operadores auditados en este periodo.
+          </div>
+        }
+      </section>
+    </div>
+  }
+</main>

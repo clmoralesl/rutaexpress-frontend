@@ -72,7 +72,8 @@
 
       <a
         class="menu-item"
-        *ngIf="tieneRol('ADMIN')">
+        routerLink="/reportes"
+        *ngIf="tieneRol('ADMIN', 'AUDITOR', 'OPERADOR')">
         <span>▥</span>
         Reportería
       </a>
