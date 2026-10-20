@@ -204,3 +204,24 @@ th {
 .shipments-page .boton-volver {
   background: #ff641c;
 }
+
+.boton-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.boton-etiqueta:hover {
+  background-color: #ff641c;
+  border-color: #ff641c;
+}

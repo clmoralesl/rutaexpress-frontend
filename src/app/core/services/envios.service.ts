@@ -1,4 +1,4 @@
-﻿import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -14,6 +14,9 @@ export interface Envio {
   estado: string;
   fechaCreacion: string;
   fechaActualizacion: string;
+  servicioNombre?: string;
+  remitenteNombre?: string;
+  destinatarioNombre?: string;
 }
 
 export interface FiltrosEnvios {
@@ -73,5 +76,9 @@ export class EnviosService {
       `${this.apiUrl}/${id}/estado`,
       request
     );
+  }
+
+  solicitarEtiqueta(id: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/etiqueta`, {});
   }
 }

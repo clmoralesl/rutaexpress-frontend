@@ -197,6 +197,7 @@
             <th>Destino</th>
             <th>Estado</th>
             <th>Fecha creación</th>
+            <th>Etiqueta</th>
 
             <th *ngIf="puedeGestionarEstados()">
               Acciones
@@ -222,6 +223,16 @@
 
             <td>
               {{ envio.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+
+            <td>
+              <button
+                type="button"
+                class="boton-etiqueta"
+                (click)="abrirEtiqueta(envio)"
+                title="Generar e imprimir etiqueta térmica de despacho">
+                Imprimir Etiqueta
+              </button>
             </td>
 
             <td *ngIf="puedeGestionarEstados()">
@@ -267,3 +278,11 @@
   (confirmed)="confirmarCambio()"
   (cancelled)="cancelarCambio()">
 </app-confirm-dialog>
+
+<app-etiqueta-modal
+  [visible]="etiquetaModalVisible"
+  [envio]="envioSeleccionadoEtiqueta"
+  [encoladoRabbitMQ]="encoladoRabbitMQ"
+  (cerrar)="cerrarEtiqueta()"
+  (reintentarEncolado)="reintentarEncolado($event)">
+</app-etiqueta-modal>

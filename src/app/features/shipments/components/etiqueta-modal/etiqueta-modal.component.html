@@ -1,0 +1,158 @@
+<div
+  *ngIf="visible && envio"
+  class="modal-overlay"
+  (click)="cerrarModal()"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="etiqueta-titulo">
+
+  <div
+    class="etiqueta-modal-dialog"
+    (click)="$event.stopPropagation()">
+
+    <!-- Cabecera del Modal de Previsualizacion -->
+    <header class="modal-header-barra">
+      <div>
+        <h2 id="etiqueta-titulo" class="modal-titulo">Guía de Despacho y Etiqueta Térmica</h2>
+        <p class="modal-subtitulo">
+          Formato estándar para impresión térmica 10x15 cm (4x6 pulg) y rotulado de bodega.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="boton-cerrar-modal"
+        (click)="cerrarModal()"
+        aria-label="Cerrar modal de etiqueta">
+        ✕
+      </button>
+    </header>
+
+    <!-- Estado de Cola Asincrona RabbitMQ -->
+    <div class="alerta-rabbitmq" [class.encolado-exitoso]="encoladoRabbitMQ">
+      <div class="alerta-icono">
+        <span *ngIf="encoladoRabbitMQ">●</span>
+        <span *ngIf="!encoladoRabbitMQ">○</span>
+      </div>
+      <div class="alerta-cuerpo">
+        <strong>RabbitMQ (q.cmd.label):</strong>
+        <span *ngIf="encoladoRabbitMQ">
+          Solicitud de emisión asíncrona registrada en el exchange direct.rutaexpress.
+        </span>
+        <span *ngIf="!encoladoRabbitMQ">
+          Notificando comando de rotulado térmico a la cola de mensajería...
+        </span>
+      </div>
+      <button
+        *ngIf="!encoladoRabbitMQ"
+        type="button"
+        class="boton-reintentar-mq"
+        (click)="solicitarReencolado()">
+        Reintentar cola
+      </button>
+    </div>
+
+    <!-- Contenedor de la Etiqueta Fisica Termica (10x15 cm) -->
+    <div class="hoja-termica-contenedor">
+      <div class="etiqueta-termica" id="etiqueta-imprimible">
+
+        <!-- Fila Superior: Encabezado y Marca -->
+        <header class="termica-cabecera">
+          <div class="termica-marca">
+            <span class="marca-nombre">RUTAEXPRESS</span>
+            <span class="marca-sub">LOGISTICS NETWORK</span>
+          </div>
+          <div class="termica-tipo-doc">
+            <span class="doc-badge">GUÍA OFICIAL</span>
+            <span class="doc-fecha">{{ fechaEmision }}</span>
+          </div>
+        </header>
+
+        <!-- Bloque Codigo de Seguimiento y Codigo de Barras Vectorial -->
+        <section class="termica-barcode-seccion">
+          <div class="barcode-texto-grande">
+            {{ envio.codigoSeguimiento }}
+          </div>
+          <div class="barcode-svg-render" *ngIf="codigoBarrasSvg" [innerHTML]="codigoBarrasSvg"></div>
+        </section>
+
+        <!-- Bloque Remitente y Destinatario -->
+        <section class="termica-direcciones-grid">
+          <!-- Cuadro Remitente -->
+          <article class="direccion-caja caja-remitente">
+            <span class="caja-etiqueta">REMITENTE (ORIGEN)</span>
+            <p class="caja-nombre">{{ envio.remitenteNombre || 'CLIENTE REMITENTE' }}</p>
+            <p class="caja-rut"><strong>RUT:</strong> {{ envio.rutRemitente }}</p>
+            <p class="caja-direccion">{{ envio.direccionOrigen }}</p>
+          </article>
+
+          <!-- Cuadro Destinatario -->
+          <article class="direccion-caja caja-destinatario">
+            <span class="caja-etiqueta destacada">DESTINATARIO (ENTREGA)</span>
+            <p class="caja-nombre destacado">{{ envio.destinatarioNombre || 'CLIENTE DESTINATARIO' }}</p>
+            <p class="caja-rut"><strong>RUT:</strong> {{ envio.rutDestinatario }}</p>
+            <p class="caja-direccion destacado">{{ envio.direccionDestino }}</p>
+          </article>
+        </section>
+
+        <!-- Bloque Especificaciones Tecnicas y Peso -->
+        <section class="termica-datos-grid">
+          <div class="dato-celda">
+            <span class="dato-titulo">SERVICIO</span>
+            <span class="dato-valor valor-servicio">{{ obtenerServicioEstimado() }}</span>
+          </div>
+          <div class="dato-celda">
+            <span class="dato-titulo">PESO FÍSICO</span>
+            <span class="dato-valor valor-peso">{{ envio.pesoKg | number:'1.2-2' }} KG</span>
+          </div>
+          <div class="dato-celda">
+            <span class="dato-titulo">BULTOS</span>
+            <span class="dato-valor">1 / 1</span>
+          </div>
+          <div class="dato-celda">
+            <span class="dato-titulo">HUB BODEGA</span>
+            <span class="dato-valor">STGO-CENTRAL</span>
+          </div>
+        </section>
+
+        <!-- Bloque Inferior: Codigo QR con Enlace Directo a Rastreo -->
+        <footer class="termica-pie-qr">
+          <div class="qr-render-caja" *ngIf="qrSvg" [innerHTML]="qrSvg"></div>
+          <div class="qr-instrucciones">
+            <span class="qr-titulo">SEGUIMIENTO EN TIEMPO REAL</span>
+            <p class="qr-texto">
+              Escanee el código QR para consultar trazabilidad pública y estado en tránsito.
+            </p>
+            <code class="qr-enlace">{{ urlSeguimiento }}</code>
+            <div class="sello-bodega">
+              VALIDADO BODEGA RUTAEXPRESS - ADMISIÓN ELECTRÓNICA
+            </div>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+
+    <!-- Botones de Accion del Modal -->
+    <footer class="modal-acciones">
+      <div class="acciones-info">
+        <span>Tamaño 100 × 150 mm configurado para impresoras térmicas y PDF.</span>
+      </div>
+      <div class="acciones-botones">
+        <button
+          type="button"
+          class="boton-accion secundario"
+          (click)="cerrarModal()">
+          Cerrar
+        </button>
+        <button
+          type="button"
+          class="boton-accion primario"
+          (click)="imprimir()">
+          Imprimir Etiqueta / PDF
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+</div>
