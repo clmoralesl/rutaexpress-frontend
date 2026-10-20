@@ -6,7 +6,7 @@ import { Login } from './features/login/login';
 import { Dashboard } from './features/dashboard/dashboard';
 import { Shipments } from './features/shipments/shipments';
 import { Landing } from './features/landing/landing';
-import { RastreoProvisional } from './features/rastreo-provisional/rastreo-provisional';
+import { RastreoComponent } from './features/rastreo/rastreo.component';
 
 export const routes: Routes = [
   {
@@ -20,11 +20,11 @@ export const routes: Routes = [
   },
   {
     path: 'rastreo',
-    component: RastreoProvisional
+    component: RastreoComponent
   },
   {
     path: 'rastreo/:codigo',
-    component: RastreoProvisional
+    component: RastreoComponent
   },
   {
     path: 'dashboard',

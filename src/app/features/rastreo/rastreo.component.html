@@ -1,0 +1,282 @@
+<div class="rastreo-layout">
+  <!-- Encabezado Corporativo Publico -->
+  <header class="barra-superior" role="banner">
+    <div class="contenedor-barra">
+      <a routerLink="/" class="logo-enlace" aria-label="Volver a la pagina de inicio de RutaExpress">
+        <div class="icono-marca">R</div>
+        <div class="texto-marca">
+          <span class="nombre-marca">RutaExpress</span>
+          <span class="subtexto-marca">Seguimiento Logístico</span>
+        </div>
+      </a>
+      <nav class="navegacion-superior">
+        <a routerLink="/" class="enlace-inicio">Inicio</a>
+        <a routerLink="/login" class="boton-acceso">Portal Corporativo</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="contenedor-principal" role="main">
+
+    <!-- Seccion de Busqueda -->
+    <section class="seccion-buscador" aria-labelledby="titulo-buscador">
+      <h1 id="titulo-buscador" class="titulo-pagina">Rastreo Público de Envíos</h1>
+      <p class="descripcion-pagina">
+        Monitorea en tiempo real la ubicación, avance y fecha estimada de entrega de tus paquetes sin requerir inicio de sesión.
+      </p>
+
+      <form (ngSubmit)="buscar()" class="formulario-rastreo" novalidate>
+        <div class="grupo-input">
+          <label for="codigo-seguimiento" class="etiqueta-input">Código de Seguimiento</label>
+          <div class="campo-con-boton">
+            <input
+              id="codigo-seguimiento"
+              type="text"
+              name="codigo"
+              [ngModel]="codigo()"
+              (ngModelChange)="codigo.set($event)"
+              placeholder="Ej: RTX-2026-0001"
+              maxlength="50"
+              autocomplete="off"
+              spellcheck="false"
+              class="input-rastreo"
+              required
+            />
+            <button
+              type="submit"
+              class="boton-rastrear"
+              [disabled]="cargando()"
+              aria-label="Rastrear paquete">
+              @if (cargando()) {
+                <span>Consultando...</span>
+              } @else {
+                <span>Rastrear Envío</span>
+              }
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Codigos de Demostracion Rapida para Entorno Local -->
+      <div class="panel-ejemplos">
+        <span class="etiqueta-ejemplos">Códigos de prueba para demostración:</span>
+        <div class="lista-pills">
+          @for (item of codigosDemostracion; track item.codigo) {
+            <button
+              type="button"
+              class="pill-codigo"
+              (click)="seleccionarEjemplo(item.codigo)"
+              [title]="item.descripcion">
+              {{ item.codigo }} ({{ item.estado }})
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Estado de Carga con Skeletons -->
+    @if (cargando()) {
+      <section class="tarjeta-resultado seccion-skeleton" aria-label="Cargando informacion de seguimiento">
+        <app-skeleton [rows]="5"></app-skeleton>
+      </section>
+    }
+
+    <!-- Alerta de Error -->
+    @if (mensajeError()) {
+      <div class="alerta-error" role="alert">
+        <div class="icono-alerta" aria-hidden="true">!</div>
+        <div class="contenido-alerta">
+          <strong>No fue posible encontrar el envío</strong>
+          <p>{{ mensajeError() }}</p>
+          <span class="consejo-error">Verifica que el código coincida con el número de tu comprobante o selecciona uno de los códigos de demostración arriba.</span>
+        </div>
+      </div>
+    }
+
+    <!-- Detalle de Seguimiento -->
+    @if (seguimiento(); as envio) {
+      <section class="tarjeta-resultado" aria-label="Informacion detallada del envio">
+
+        <!-- Cabecera del Envio -->
+        <header class="cabecera-envio">
+          <div class="datos-principales">
+            <span class="subtitulo-codigo">CÓDIGO DE SEGUIMIENTO</span>
+            <h2 class="codigo-destacado">{{ envio.codigoSeguimiento }}</h2>
+            <span class="fecha-actualizacion">
+              Última actualización: {{ envio.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div class="contenedor-badge">
+            <span class="badge-estado" [ngClass]="obtenerClaseBadge(envio.estadoActual)">
+              {{ obtenerTextoBadge(envio.estadoActual) }}
+            </span>
+          </div>
+        </header>
+
+        <!-- Stepper Visual de Progreso -->
+        <section class="seccion-stepper" aria-label="Linea de tiempo del estado del paquete">
+          @if (envio.estadoActual === 'CANCELADO') {
+            <div class="alerta-cancelado" role="status">
+              <span class="icono-cancelado">×</span>
+              <div>
+                <strong>Envío Cancelado</strong>
+                <p>Este paquete fue cancelado antes de su distribución. Para más información, comunícate con soporte.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="stepper-horizontal">
+              @for (paso of pasos; track paso.codigo; let i = $index) {
+                <div
+                  class="nodo-paso"
+                  [class.completado]="estaCompletado(i)"
+                  [class.activo]="esPasoActual(paso.codigo)">
+
+                  <!-- Linea conectora hacia el siguiente paso -->
+                  @if (i < pasos.length - 1) {
+                    <div class="linea-conectora" [class.linea-activa]="indicePasoActual() > i"></div>
+                  }
+
+                  <!-- Circulo de estado -->
+                  <div class="circulo-paso" aria-hidden="true">
+                    @if (indicePasoActual() > i) {
+                      <span class="simbolo-check">✓</span>
+                    } @else if (esPasoActual(paso.codigo)) {
+                      <span class="punto-pulso"></span>
+                    } @else {
+                      <span class="numero-paso">{{ i + 1 }}</span>
+                    }
+                  </div>
+
+                  <!-- Textos del paso -->
+                  <div class="info-paso">
+                    <span class="nombre-paso">{{ paso.nombre }}</span>
+                    <span class="detalle-paso">{{ paso.subtitulo }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- Grid de Tarjeta de Detalles y Codigo QR -->
+        <div class="grid-contenido-envio">
+
+          <!-- Tarjeta de Detalles Logisticos -->
+          <article class="tarjeta-detalles">
+            <h3 class="titulo-subseccion">Detalles de Entrega</h3>
+            <div class="lista-detalles">
+              <div class="item-detalle">
+                <span class="etiqueta-campo">Ciudad de Origen</span>
+                <strong class="valor-campo">{{ envio.ciudadOrigen }}</strong>
+              </div>
+
+              <div class="item-detalle">
+                <span class="etiqueta-campo">Ciudad de Destino</span>
+                <strong class="valor-campo">{{ envio.ciudadDestino }}</strong>
+              </div>
+
+              <div class="item-detalle destacada">
+                <span class="etiqueta-campo">Fecha Estimada de Entrega</span>
+                <strong class="valor-campo fecha-estimada">
+                  @if (envio.estadoActual === 'CANCELADO') {
+                    Cancelada
+                  } @else {
+                    {{ envio.fechaEstimadaEntrega | date:'EEEE, dd/MM/yyyy HH:mm' }}
+                  }
+                </strong>
+              </div>
+
+              <div class="item-detalle">
+                <span class="etiqueta-campo">Servicio Contratado</span>
+                <strong class="valor-campo">{{ envio.servicioContratado }}</strong>
+              </div>
+
+              <div class="item-detalle">
+                <span class="etiqueta-campo">Courier / Operador</span>
+                <strong class="valor-campo">{{ envio.courierAsignado }}</strong>
+              </div>
+
+              <div class="item-detalle">
+                <span class="etiqueta-campo">Peso Declarado</span>
+                <strong class="valor-campo">{{ envio.pesoKg }} kg</strong>
+              </div>
+            </div>
+
+            <footer class="pie-privacidad">
+              <span class="nota-privacidad">
+                Vista pública protegida: los datos de facturación, tarifas y datos personales sensibles se encuentran resguardados conforme a la política de privacidad de RutaExpress.
+              </span>
+            </footer>
+          </article>
+
+          <!-- Tarjeta de Codigo QR y Compartir -->
+          <aside class="tarjeta-qr">
+            <h3 class="titulo-subseccion">Código QR de Seguimiento</h3>
+            <p class="descripcion-qr">
+              Escanea este código con la cámara de tu smartphone para abrir este seguimiento al instante en tu móvil.
+            </p>
+
+            <div class="contenedor-qr-svg" [innerHTML]="qrSvg()"></div>
+
+            <div class="acciones-compartir">
+              <button
+                type="button"
+                class="boton-accion-secundario"
+                (click)="copiarEnlace()"
+                title="Copiar enlace directo al portapapeles">
+                Copiar Enlace
+              </button>
+
+              <button
+                type="button"
+                class="boton-accion-secundario"
+                (click)="imprimir()"
+                title="Imprimir comprobante de rastreo">
+                Imprimir Comprobante
+              </button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Historial Cronologico de Movimientos -->
+        <section class="seccion-historial" aria-label="Historial de movimientos">
+          <h3 class="titulo-subseccion">Historial Cronológico de Movimientos</h3>
+
+          @if (envio.historial && envio.historial.length > 0) {
+            <ol class="timeline-movimientos">
+              @for (evento of envio.historial; track $index) {
+                <li class="item-timeline">
+                  <div class="marcador-timeline" aria-hidden="true"></div>
+                  <div class="cuerpo-evento">
+                    <div class="cabecera-evento">
+                      <span class="estado-evento">{{ obtenerTextoBadge(evento.estado) }}</span>
+                      <time class="fecha-evento" [attr.datetime]="evento.fecha">
+                        {{ evento.fecha | date:'dd/MM/yyyy HH:mm' }}
+                      </time>
+                    </div>
+                    @if (evento.descripcion) {
+                      <p class="descripcion-evento">{{ evento.descripcion }}</p>
+                    }
+                  </div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="sin-historial">El historial detallado de movimientos se generará a medida que el paquete avance en la red logística.</p>
+          }
+        </section>
+
+      </section>
+    }
+
+  </main>
+
+  <!-- Pie de Pagina Corporativo -->
+  <footer class="pie-pagina" role="contentinfo">
+    <div class="contenedor-pie">
+      <p class="copyright">RutaExpress SpA - Plataforma Logística de Última Milla</p>
+      <p class="soporte">Centro de Atención al Cliente y Seguimiento</p>
+    </div>
+  </footer>
+</div>
