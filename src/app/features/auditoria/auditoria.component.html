@@ -1,0 +1,613 @@
+<!-- Notificaciones Toast Globales -->
+<app-toast />
+
+<!-- Barra Superior de Navegacion -->
+<header class="barra-superior" role="banner">
+  <div class="contenedor-barra">
+    <a routerLink="/" class="logo-enlace" aria-label="Ir a la pagina de inicio de RutaExpress">
+      <div class="icono-marca">RE</div>
+      <div class="texto-marca">
+        <span class="nombre-marca">RutaExpress</span>
+        <span class="subtexto-marca">Auditoria & Trazabilidad</span>
+      </div>
+    </a>
+
+    <nav class="navegacion-superior" aria-label="Navegacion principal">
+      <a routerLink="/" class="enlace-nav">Inicio</a>
+      <a routerLink="/rastreo" class="enlace-nav">Rastreo</a>
+      <a routerLink="/catalogo" class="enlace-nav">Catalogo</a>
+      <a routerLink="/auditoria" class="enlace-nav activo">Auditoria</a>
+      <a routerLink="/dashboard" class="enlace-nav">Dashboard</a>
+      <a routerLink="/envios" class="enlace-nav">Envios</a>
+      <div class="rol-badge" [class.es-admin]="esAdminOAuditor()">
+        Rol: {{ authService.obtenerRolActivo() }}
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="contenedor-principal" role="main">
+
+  <!-- Encabezado de Seccion y Origen de Datos -->
+  <header class="encabezado-seccion">
+    <div class="titulos">
+      <nav class="migajas" aria-label="Ruta de navegacion">
+        <a routerLink="/dashboard">Dashboard</a>
+        <span class="separador">/</span>
+        <span class="actual">Auditoria & Trazabilidad</span>
+      </nav>
+      <h1 class="titulo-pagina">Registro de Auditoria y Event Sourcing</h1>
+      <p class="descripcion-pagina">
+        Flujo cronologico de eventos inmutables, transicion de estados e inspeccion forense de envios respaldada por Kafka y Oracle Cloud ATP.
+      </p>
+    </div>
+
+    <div class="acciones-encabezado">
+      <div class="origen-datos-badge" [class.es-oracle]="origenDatos() === 'ORACLE_DB'">
+        <span class="punto-estado"></span>
+        <span class="texto-origen">
+          {{ origenDatos() === 'ORACLE_DB' ? 'Oracle Cloud ATP (En Linea)' : 'Modo Contingencia Local' }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-secundario"
+        (click)="modoVista() === 'GLOBAL' ? cargarEventos(paginaActual()) : (envioSeleccionadoId() && inspeccionarEnvio(envioSeleccionadoId()!))"
+        title="Actualizar datos desde el servidor">
+        <svg class="icono-btn" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+        </svg>
+        Refrescar
+      </button>
+    </div>
+  </header>
+
+  <!-- Tarjetas KPI de Auditoria -->
+  <section class="grid-resumen" aria-label="Metricas globales de auditoria">
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-eventos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Eventos Registrados</span>
+        <strong class="valor-kpi">{{ totalEventosKPI() }}</strong>
+        <span class="subtexto-kpi">Trazabilidad inmutable</span>
+      </div>
+    </article>
+
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-envios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Envios Auditados</span>
+        <strong class="valor-kpi">{{ totalEnviosUnicos() }}</strong>
+        <span class="subtexto-kpi">Unidades unicas en transito</span>
+      </div>
+    </article>
+
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-usuarios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Operadores Auditados</span>
+        <strong class="valor-kpi">{{ totalUsuariosAuditados() }}</strong>
+        <span class="subtexto-kpi">Responsables con firma</span>
+      </div>
+    </article>
+
+    <article class="tarjeta-kpi">
+      <div class="icono-kpi icono-entregas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <div class="cuerpo-kpi">
+        <span class="etiqueta-kpi">Entregas / Cancelados</span>
+        <strong class="valor-kpi">{{ totalEntregados() }} / {{ totalCancelados() }}</strong>
+        <span class="subtexto-kpi">Finalizaciones registradas</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Barra de Busqueda Rapida y Selector de Vista -->
+  <section class="barra-busqueda-envio" aria-label="Busqueda de envio especifico">
+    <div class="selector-modo-vista">
+      <button
+        type="button"
+        class="btn-modo"
+        [class.activo]="modoVista() === 'GLOBAL'"
+        (click)="volverAlFlujoGlobal()">
+        Flujo Global de Eventos
+      </button>
+      <button
+        type="button"
+        class="btn-modo"
+        [class.activo]="modoVista() === 'ENVIO'"
+        (click)="inspeccionarEnvio(envioSeleccionadoId() || 4)">
+        Inspeccion Forense por Envio
+      </button>
+    </div>
+
+    <form class="formulario-busqueda-rapida" (ngSubmit)="buscarEnvioPorInput()">
+      <div class="campo-input-busqueda">
+        <svg class="icono-input" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+        </svg>
+        <input
+          type="search"
+          placeholder="Ingresar ID (ej: 4) o codigo de seguimiento (ej: RE-LIVE-001)..."
+          [value]="busquedaEnvio()"
+          (input)="busquedaEnvio.set($any($event.target).value)"
+          aria-label="Buscar envio para inspeccion forense"
+        />
+      </div>
+      <button type="submit" class="btn btn-primario">
+        Inspeccionar Envio
+      </button>
+    </form>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 1: FLUJO GLOBAL DE EVENTOS (PAGINADO) -->
+  <!-- ========================================================================= -->
+  @if (modoVista() === 'GLOBAL') {
+    <section class="seccion-flujo-global" aria-label="Flujo global de eventos">
+
+      <!-- Panel de Filtros Avanzados -->
+      <div class="panel-filtros">
+        <div class="fila-filtros">
+          <div class="grupo-campo">
+            <label for="filtro-usuario" class="etiqueta-campo">Operador / Usuario</label>
+            <input
+              id="filtro-usuario"
+              type="text"
+              class="input-control"
+              placeholder="Ej: courier_santiago@rutaexpress.cl"
+              [value]="filtroUsuario()"
+              (input)="filtroUsuario.set($any($event.target).value)"
+            />
+          </div>
+
+          <div class="grupo-campo">
+            <label for="filtro-estado" class="etiqueta-campo">Estado Resultante</label>
+            <select
+              id="filtro-estado"
+              class="select-control"
+              [value]="filtroEstadoNuevo()"
+              (change)="filtroEstadoNuevo.set($any($event.target).value)">
+              <option value="TODOS">Todos los estados</option>
+              <option value="CREADO">Creado</option>
+              <option value="ACEPTADO">Aceptado</option>
+              <option value="EN_BODEGA">En Bodega</option>
+              <option value="EN_RUTA">En Ruta</option>
+              <option value="ENTREGADO">Entregado</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+          </div>
+
+          <div class="grupo-campo">
+            <label for="filtro-desde" class="etiqueta-campo">Fecha Desde</label>
+            <input
+              id="filtro-desde"
+              type="date"
+              class="input-control"
+              [value]="filtroFechaDesde()"
+              (change)="filtroFechaDesde.set($any($event.target).value)"
+            />
+          </div>
+
+          <div class="grupo-campo">
+            <label for="filtro-hasta" class="etiqueta-campo">Fecha Hasta</label>
+            <input
+              id="filtro-hasta"
+              type="date"
+              class="input-control"
+              [value]="filtroFechaHasta()"
+              (change)="filtroFechaHasta.set($any($event.target).value)"
+            />
+          </div>
+
+          <div class="acciones-filtro">
+            <button type="button" class="btn btn-primario" (click)="cargarEventos(0)">
+              Filtrar
+            </button>
+            <button type="button" class="btn btn-enlace" (click)="limpiarFiltros()">
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado de Carga -->
+      @if (cargando()) {
+        <div class="contenedor-esqueleto" aria-live="polite">
+          <app-skeleton height="90px" />
+          <app-skeleton height="90px" />
+          <app-skeleton height="90px" />
+          <app-skeleton height="90px" />
+        </div>
+      }
+
+      <!-- Estado Vacio -->
+      @if (!cargando() && eventos().length === 0) {
+        <app-empty-state
+          title="Sin eventos de auditoria"
+          message="No se encontraron registros de eventos para los filtros especificados."
+        />
+      }
+
+      <!-- Linea de Tiempo Cronologica Global -->
+      @if (!cargando() && eventos().length > 0) {
+        <div class="timeline-cronologico" role="feed" aria-label="Lista cronologica de eventos de auditoria">
+          @for (evento of eventos(); track evento.id) {
+            <article class="item-timeline" [class]="'tipo-' + obtenerClaseEstado(evento.estadoNuevo)">
+
+              <!-- Nodo de la Linea de Tiempo con Iconografia -->
+              <div class="nodo-timeline">
+                <div class="circulo-icono" [class]="obtenerClaseEstado(evento.estadoNuevo)">
+                  @switch (evento.estadoNuevo) {
+                    @case ('CREADO') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                    }
+                    @case ('ACEPTADO') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                    }
+                    @case ('EN_BODEGA') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                      </svg>
+                    }
+                    @case ('EN_RUTA') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                      </svg>
+                    }
+                    @case ('ENTREGADO') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    }
+                    @case ('CANCELADO') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                      </svg>
+                    }
+                    @default {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                      </svg>
+                    }
+                  }
+                </div>
+                <div class="linea-conectora"></div>
+              </div>
+
+              <!-- Tarjeta de Contenido del Evento -->
+              <div class="tarjeta-evento">
+                <div class="cabecera-tarjeta">
+                  <div class="identificacion-envio">
+                    <span class="etiqueta-envio-id">Envio #{{ evento.envioId }}</span>
+                    <strong class="codigo-seguimiento">{{ evento.codigoSeguimiento }}</strong>
+                    <button
+                      type="button"
+                      class="btn-inspeccionar-inline"
+                      (click)="inspeccionarEnvio(evento.envioId)"
+                      title="Inspeccionar historial completo de este envio">
+                      Ver Trazabilidad Forense
+                    </button>
+                  </div>
+
+                  <!-- Badge Comparativo de Transicion de Estados -->
+                  <div class="badge-transicion">
+                    <span class="estado-badge" [class]="obtenerClaseEstado(evento.estadoAnterior)">
+                      {{ obtenerEtiquetaEstado(evento.estadoAnterior) }}
+                    </span>
+                    <span class="flecha-transicion" aria-hidden="true">→</span>
+                    <span class="estado-badge" [class]="obtenerClaseEstado(evento.estadoNuevo)">
+                      {{ obtenerEtiquetaEstado(evento.estadoNuevo) }}
+                    </span>
+                  </div>
+
+                  <time class="timestamp-evento" [dateTime]="evento.fechaEvento">
+                    {{ formatearFecha(evento.fechaEvento) }}
+                  </time>
+                </div>
+
+                <!-- Metadatos de Responsabilidad y Registro -->
+                <div class="metadatos-grid">
+                  <div class="dato-metadato">
+                    <span class="clave-meta">Operador / Usuario:</span>
+                    <span class="valor-meta">
+                      <strong>{{ evento.usuarioEmail }}</strong>
+                      <span class="rol-etiqueta">{{ evento.usuarioRol }}</span>
+                    </span>
+                  </div>
+
+                  <div class="dato-metadato">
+                    <span class="clave-meta">UUID Evento Kafka:</span>
+                    <span class="valor-meta valor-mono">
+                      {{ evento.eventoId }}
+                      <button
+                        type="button"
+                        class="btn-copiar-mini"
+                        (click)="copiarAlPortapapeles(evento.eventoId, 'UUID copiado al portapapeles')"
+                        title="Copiar UUID del evento">
+                        Copiar
+                      </button>
+                    </span>
+                  </div>
+
+                  <div class="dato-metadato">
+                    <span class="clave-meta">Registro en BD:</span>
+                    <span class="valor-meta">{{ formatearFecha(evento.fechaRegistro) }}</span>
+                  </div>
+                </div>
+
+                <!-- Seccion de Detalles Tecnicos Expandibles -->
+                @if (tieneDetalles(evento)) {
+                  <div class="seccion-detalles-tecnicos">
+                    <div class="acciones-detalles">
+                      <button
+                        type="button"
+                        class="btn-toggle-detalles"
+                        (click)="alternarDetalles(evento.id)">
+                        {{ detallesExpandidos().has(evento.id) ? 'Ocultar detalles tecnicos' : 'Ver detalles tecnicos del evento' }}
+                        <span class="icono-chevron" [class.abierto]="detallesExpandidos().has(evento.id)">▾</span>
+                      </button>
+
+                      @if (detallesExpandidos().has(evento.id)) {
+                        <button
+                          type="button"
+                          class="btn-switch-json"
+                          (click)="alternarJsonCrudo(evento.id)">
+                          {{ modoJsonCrudo().has(evento.id) ? 'Ver formato tabla' : 'Ver JSON crudo' }}
+                        </button>
+                      }
+                    </div>
+
+                    @if (detallesExpandidos().has(evento.id)) {
+                      <div class="panel-contenido-detalles">
+                        @if (!modoJsonCrudo().has(evento.id)) {
+                          <div class="grid-detalles-estructurados">
+                            @for (item of obtenerClavesDetalle(evento); track item.clave) {
+                              <div class="item-detalle">
+                                <span class="clave-detalle">{{ item.etiqueta }}:</span>
+                                <span class="valor-detalle">{{ item.valor }}</span>
+                              </div>
+                            }
+                          </div>
+                        } @else {
+                          <div class="visor-json-crudo">
+                            <pre><code>{{ obtenerJsonFormateado(evento) }}</code></pre>
+                            <button
+                              type="button"
+                              class="btn-copiar-json"
+                              (click)="copiarAlPortapapeles(obtenerJsonFormateado(evento), 'Payload JSON copiado')">
+                              Copiar JSON
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </article>
+          }
+        </div>
+
+        <!-- Paginador del Flujo Global -->
+        <nav class="barra-paginacion" aria-label="Navegacion de paginas de auditoria">
+          <div class="info-paginacion">
+            Mostrando pagina {{ paginaActual() + 1 }} de {{ totalPaginas() }} ({{ totalElementos() }} eventos totales)
+          </div>
+
+          <div class="controles-paginacion">
+            <button
+              type="button"
+              class="btn-pag"
+              [disabled]="paginaActual() === 0"
+              (click)="cambiarPagina(paginaActual() - 1)">
+              Anterior
+            </button>
+            <span class="indicador-pagina">{{ paginaActual() + 1 }}</span>
+            <button
+              type="button"
+              class="btn-pag"
+              [disabled]="paginaActual() >= totalPaginas() - 1"
+              (click)="cambiarPagina(paginaActual() + 1)">
+              Siguiente
+            </button>
+          </div>
+        </nav>
+      }
+    </section>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 2: INSPECCION FORENSE POR ENVIO ESPECIFICO (TIMELINE INMUTABLE) -->
+  <!-- ========================================================================= -->
+  @if (modoVista() === 'ENVIO') {
+    <section class="seccion-trazabilidad-forense" aria-label="Inspeccion forense del envio">
+
+      <!-- Cabecera de Envio Forense -->
+      <div class="cabecera-forense">
+        <button type="button" class="btn btn-secundario" (click)="volverAlFlujoGlobal()">
+          ← Volver al Flujo Global
+        </button>
+
+        @if (timelineEnvio()) {
+          <div class="resumen-envio-forense">
+            <div class="columna-info-envio">
+              <span class="subtitulo-forense">Inspeccion Forense de Envio</span>
+              <h2 class="codigo-envio-forense">{{ timelineEnvio()!.codigoSeguimiento }}</h2>
+              <span class="envio-id-etiqueta">ID de Envio en Base de Datos: #{{ timelineEnvio()!.envioId }}</span>
+            </div>
+
+            <div class="metadatos-forenses-badge">
+              <div class="dato-resumen">
+                <span class="etiqueta-resumen">Eventos en Cadena</span>
+                <strong class="valor-resumen">{{ timelineEnvio()!.totalEventos }}</strong>
+              </div>
+              <div class="dato-resumen">
+                <span class="etiqueta-resumen">Estado Actual</span>
+                @if (timelineEnvio()!.timeline.length > 0) {
+                  <span class="estado-badge" [class]="obtenerClaseEstado(timelineEnvio()!.timeline[timelineEnvio()!.timeline.length - 1].estadoNuevo)">
+                    {{ obtenerEtiquetaEstado(timelineEnvio()!.timeline[timelineEnvio()!.timeline.length - 1].estadoNuevo) }}
+                  </span>
+                } @else {
+                  <span class="estado-badge estado-generico">Sin eventos</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Estado de Carga de Timeline -->
+      @if (cargandoTimeline()) {
+        <div class="contenedor-esqueleto" aria-live="polite">
+          <app-skeleton height="120px" />
+          <app-skeleton height="120px" />
+          <app-skeleton height="120px" />
+        </div>
+      }
+
+      <!-- Sin eventos para el envio -->
+      @if (!cargandoTimeline() && (!timelineEnvio() || timelineEnvio()!.timeline.length === 0)) {
+        <app-empty-state
+          title="Sin historial de eventos"
+          message="No se encontraron eventos en la cadena inmutable para este envio."
+        />
+      }
+
+      <!-- Timeline Inmutable Forense Paso a Paso -->
+      @if (!cargandoTimeline() && timelineEnvio() && timelineEnvio()!.timeline.length > 0) {
+        <div class="timeline-forense-pasos" role="feed" aria-label="Cadena inmutable del envio paso a paso">
+          @for (paso of timelineEnvio()!.timeline; track paso.id; let i = $index) {
+            <article class="paso-forense" [class.paso-final]="i === timelineEnvio()!.timeline.length - 1">
+
+              <!-- Indicador de Paso y Conector -->
+              <div class="columna-nodo-paso">
+                <div class="numero-paso-badge" [class]="obtenerClaseEstado(paso.estadoNuevo)">
+                  {{ i + 1 }}
+                </div>
+                <div class="linea-paso-conectora"></div>
+              </div>
+
+              <!-- Tarjeta de Contenido Forense -->
+              <div class="tarjeta-paso-forense">
+                <div class="cabecera-paso">
+                  <div class="titulo-paso">
+                    <span class="etiqueta-paso-numero">Paso {{ i + 1 }} de {{ timelineEnvio()!.totalEventos }}</span>
+                    <h3 class="nombre-evento-paso">Transicion hacia {{ obtenerEtiquetaEstado(paso.estadoNuevo) }}</h3>
+                  </div>
+
+                  <!-- Transicion Visual -->
+                  <div class="badge-transicion">
+                    <span class="estado-badge" [class]="obtenerClaseEstado(paso.estadoAnterior)">
+                      {{ obtenerEtiquetaEstado(paso.estadoAnterior) }}
+                    </span>
+                    <span class="flecha-transicion" aria-hidden="true">→</span>
+                    <span class="estado-badge" [class]="obtenerClaseEstado(paso.estadoNuevo)">
+                      {{ obtenerEtiquetaEstado(paso.estadoNuevo) }}
+                    </span>
+                  </div>
+
+                  <time class="timestamp-evento" [dateTime]="paso.fechaEvento">
+                    {{ formatearFecha(paso.fechaEvento) }}
+                  </time>
+                </div>
+
+                <!-- Detalle Forense del Paso -->
+                <div class="cuerpo-paso-forense">
+                  <div class="metadatos-grid">
+                    <div class="dato-metadato">
+                      <span class="clave-meta">Operador Responsable:</span>
+                      <span class="valor-meta">
+                        <strong>{{ paso.usuarioEmail }}</strong>
+                        <span class="rol-etiqueta">{{ paso.usuarioRol }}</span>
+                      </span>
+                    </div>
+
+                    <div class="dato-metadato">
+                      <span class="clave-meta">UUID Evento Kafka:</span>
+                      <span class="valor-meta valor-mono">
+                        {{ paso.eventoId }}
+                        <button
+                          type="button"
+                          class="btn-copiar-mini"
+                          (click)="copiarAlPortapapeles(paso.eventoId, 'UUID copiado')"
+                          title="Copiar UUID">
+                          Copiar
+                        </button>
+                      </span>
+                    </div>
+
+                    <div class="dato-metadato">
+                      <span class="clave-meta">Timestamp de Persistencia:</span>
+                      <span class="valor-meta">{{ formatearFecha(paso.fechaRegistro) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Datos Tecnicos del Evento Forense -->
+                  @if (tieneDetalles(paso)) {
+                    <div class="detalles-paso-grid">
+                      <h4 class="subtitulo-detalles-paso">Detalles Tecnicos Registrados en este Hito</h4>
+                      <div class="grid-detalles-estructurados">
+                        @for (item of obtenerClavesDetalle(paso); track item.clave) {
+                          <div class="item-detalle">
+                            <span class="clave-detalle">{{ item.etiqueta }}:</span>
+                            <span class="valor-detalle">{{ item.valor }}</span>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="visor-json-crudo-forense">
+                        <pre><code>{{ obtenerJsonFormateado(paso) }}</code></pre>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+</main>

@@ -1,0 +1,1308 @@
+// =============================================================================
+// Estilos del Modulo de Auditoria y Trazabilidad Forense - RutaExpress
+// =============================================================================
+
+// Paleta de Identidad RutaExpress
+$color-primario: #ff641c;
+$color-primario-oscuro: #e05310;
+$color-primario-suave: #fff0e5;
+
+$color-texto-principal: #0f172a;
+$color-texto-secundario: #475569;
+$color-texto-atenuado: #64748b;
+
+$color-fondo-pagina: #f8fafc;
+$color-blanco: #ffffff;
+$color-borde: #e2e8f0;
+$color-borde-fuerte: #cbd5e1;
+
+// Estados Logisticos
+$estado-creado-bg: #f1f5f9;
+$estado-creado-txt: #334155;
+$estado-creado-borde: #cbd5e1;
+
+$estado-aceptado-bg: #e0f2fe;
+$estado-aceptado-txt: #0369a1;
+$estado-aceptado-borde: #bae6fd;
+
+$estado-bodega-bg: #fef3c7;
+$estado-bodega-txt: #b45309;
+$estado-bodega-borde: #fde68a;
+
+$estado-ruta-bg: #ede9fe;
+$estado-ruta-txt: #6d28d9;
+$estado-ruta-borde: #ddd6fe;
+
+$estado-entregado-bg: #dcfce7;
+$estado-entregado-txt: #15803d;
+$estado-entregado-borde: #bbf7d0;
+
+$estado-cancelado-bg: #ffe4e6;
+$estado-cancelado-txt: #be123c;
+$estado-cancelado-borde: #fecdd3;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: $color-fondo-pagina;
+  color: $color-texto-principal;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// -----------------------------------------------------------------------------
+// Barra Superior de Navegacion
+// -----------------------------------------------------------------------------
+.barra-superior {
+  background-color: $color-blanco;
+  border-bottom: 1px solid $color-borde;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+
+  .contenedor-barra {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo-enlace {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .icono-marca {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, $color-primario 0%, $color-primario-oscuro 100%);
+    color: $color-blanco;
+    font-weight: 900;
+    font-size: 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(255, 100, 28, 0.25);
+  }
+
+  .texto-marca {
+    display: flex;
+    flex-direction: column;
+
+    .nombre-marca {
+      font-size: 17px;
+      font-weight: 800;
+      color: $color-texto-principal;
+      letter-spacing: -0.3px;
+    }
+
+    .subtexto-marca {
+      font-size: 11px;
+      font-weight: 600;
+      color: $color-primario;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+  }
+
+  .navegacion-superior {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .enlace-nav {
+      font-size: 14px;
+      font-weight: 500;
+      color: $color-texto-secundario;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: $color-primario;
+        background-color: $color-primario-suave;
+      }
+
+      &.activo {
+        color: $color-primario-oscuro;
+        background-color: $color-primario-suave;
+        font-weight: 700;
+      }
+    }
+
+    .rol-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background-color: #f1f5f9;
+      color: #475569;
+      border: 1px solid $color-borde;
+
+      &.es-admin {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Contenedor Principal
+// -----------------------------------------------------------------------------
+.contenedor-principal {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+// -----------------------------------------------------------------------------
+// Encabezado de Seccion
+// -----------------------------------------------------------------------------
+.encabezado-seccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+
+  .migajas {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: $color-texto-atenuado;
+    margin-bottom: 8px;
+
+    a {
+      color: $color-texto-atenuado;
+      text-decoration: none;
+      &:hover {
+        color: $color-primario;
+      }
+    }
+
+    .actual {
+      color: $color-primario;
+      font-weight: 600;
+    }
+  }
+
+  .titulo-pagina {
+    font-size: 28px;
+    font-weight: 800;
+    color: $color-texto-principal;
+    letter-spacing: -0.5px;
+    margin: 0 0 6px 0;
+  }
+
+  .descripcion-pagina {
+    font-size: 15px;
+    color: $color-texto-secundario;
+    margin: 0;
+    max-width: 760px;
+  }
+
+  .acciones-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Insignia de Origen de Datos
+// -----------------------------------------------------------------------------
+.origen-datos-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+
+  .punto-estado {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+  }
+
+  &.es-oracle {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+
+    .punto-estado {
+      background-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Botones Generales
+// -----------------------------------------------------------------------------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+
+  .icono-btn {
+    width: 16px;
+    height: 16px;
+  }
+
+  &.btn-primario {
+    background-color: $color-primario;
+    color: $color-blanco;
+
+    &:hover {
+      background-color: $color-primario-oscuro;
+      box-shadow: 0 4px 12px rgba(255, 100, 28, 0.3);
+    }
+  }
+
+  &.btn-secundario {
+    background-color: $color-blanco;
+    color: $color-texto-principal;
+    border: 1px solid $color-borde;
+
+    &:hover {
+      background-color: #f1f5f9;
+      border-color: $color-borde-fuerte;
+    }
+  }
+
+  &.btn-enlace {
+    background: none;
+    color: $color-texto-secundario;
+    padding: 8px 12px;
+
+    &:hover {
+      color: $color-primario;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Tarjetas KPI de Resumen
+// -----------------------------------------------------------------------------
+.grid-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+
+  .tarjeta-kpi {
+    background-color: $color-blanco;
+    border: 1px solid $color-borde;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    .icono-kpi {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      &.icono-eventos {
+        background-color: #eff6ff;
+        color: #2563eb;
+      }
+
+      &.icono-envios {
+        background-color: $color-primario-suave;
+        color: $color-primario;
+      }
+
+      &.icono-usuarios {
+        background-color: #f3e8ff;
+        color: #9333ea;
+      }
+
+      &.icono-entregas {
+        background-color: #ecfdf5;
+        color: #059669;
+      }
+    }
+
+    .cuerpo-kpi {
+      display: flex;
+      flex-direction: column;
+
+      .etiqueta-kpi {
+        font-size: 13px;
+        color: $color-texto-atenuado;
+        font-weight: 500;
+      }
+
+      .valor-kpi {
+        font-size: 24px;
+        font-weight: 800;
+        color: $color-texto-principal;
+        line-height: 1.2;
+        margin: 2px 0;
+      }
+
+      .subtexto-kpi {
+        font-size: 12px;
+        color: $color-texto-secundario;
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Barra de Busqueda Rapida y Selector de Vista
+// -----------------------------------------------------------------------------
+.barra-busqueda-envio {
+  background-color: $color-blanco;
+  border: 1px solid $color-borde;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+
+  .selector-modo-vista {
+    display: inline-flex;
+    background-color: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+    gap: 4px;
+
+    .btn-modo {
+      border: none;
+      background: none;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: $color-texto-secundario;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.activo {
+        background-color: $color-blanco;
+        color: $color-primario;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+    }
+  }
+
+  .formulario-busqueda-rapida {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    max-width: 600px;
+
+    .campo-input-busqueda {
+      position: relative;
+      flex: 1;
+
+      .icono-input {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        color: $color-texto-atenuado;
+      }
+
+      input {
+        width: 100%;
+        padding: 9px 12px 9px 38px;
+        font-size: 14px;
+        border: 1px solid $color-borde;
+        border-radius: 8px;
+        outline: none;
+        background-color: #f8fafc;
+        transition: all 0.2s;
+
+        &:focus {
+          background-color: $color-blanco;
+          border-color: $color-primario;
+          box-shadow: 0 0 0 3px rgba(255, 100, 28, 0.15);
+        }
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Panel de Filtros Avanzados
+// -----------------------------------------------------------------------------
+.panel-filtros {
+  background-color: $color-blanco;
+  border: 1px solid $color-borde;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+
+  .fila-filtros {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+
+    .grupo-campo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 180px;
+
+      .etiqueta-campo {
+        font-size: 12px;
+        font-weight: 600;
+        color: $color-texto-secundario;
+      }
+
+      .input-control,
+      .select-control {
+        padding: 8px 12px;
+        font-size: 13px;
+        border: 1px solid $color-borde;
+        border-radius: 6px;
+        background-color: #f8fafc;
+        outline: none;
+        transition: all 0.2s;
+
+        &:focus {
+          background-color: $color-blanco;
+          border-color: $color-primario;
+          box-shadow: 0 0 0 3px rgba(255, 100, 28, 0.12);
+        }
+      }
+    }
+
+    .acciones-filtro {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Contenedor Esqueleto de Carga
+// -----------------------------------------------------------------------------
+.contenedor-esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+// -----------------------------------------------------------------------------
+// Linea de Tiempo Cronologica Vertical (Global)
+// -----------------------------------------------------------------------------
+.timeline-cronologico {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 0;
+
+  .item-timeline {
+    display: flex;
+    gap: 20px;
+    position: relative;
+
+    .nodo-timeline {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+
+      .circulo-icono {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        border: 2px solid $color-borde;
+        background-color: $color-blanco;
+        z-index: 2;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+
+        &.estado-creado {
+          border-color: $estado-creado-borde;
+          background-color: $estado-creado-bg;
+          color: $estado-creado-txt;
+        }
+
+        &.estado-aceptado {
+          border-color: $estado-aceptado-borde;
+          background-color: $estado-aceptado-bg;
+          color: $estado-aceptado-txt;
+        }
+
+        &.estado-en-bodega {
+          border-color: $estado-bodega-borde;
+          background-color: $estado-bodega-bg;
+          color: $estado-bodega-txt;
+        }
+
+        &.estado-en-ruta {
+          border-color: $estado-ruta-borde;
+          background-color: $estado-ruta-bg;
+          color: $estado-ruta-txt;
+        }
+
+        &.estado-entregado {
+          border-color: $estado-entregado-borde;
+          background-color: $estado-entregado-bg;
+          color: $estado-entregado-txt;
+        }
+
+        &.estado-cancelado {
+          border-color: $estado-cancelado-borde;
+          background-color: $estado-cancelado-bg;
+          color: $estado-cancelado-txt;
+        }
+      }
+
+      .linea-conectora {
+        width: 2px;
+        flex: 1;
+        background-color: $color-borde;
+        margin-top: 6px;
+      }
+    }
+
+    &:last-child .linea-conectora {
+      display: none;
+    }
+
+    .tarjeta-evento {
+      background-color: $color-blanco;
+      border: 1px solid $color-borde;
+      border-radius: 12px;
+      padding: 18px 22px;
+      flex: 1;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: $color-borde-fuerte;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Cabecera de Tarjeta de Evento
+// -----------------------------------------------------------------------------
+.cabecera-tarjeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid $color-borde;
+  margin-bottom: 14px;
+
+  .identificacion-envio {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    .etiqueta-envio-id {
+      font-size: 12px;
+      font-weight: 700;
+      color: $color-texto-atenuado;
+      background-color: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .codigo-seguimiento {
+      font-size: 15px;
+      font-weight: 800;
+      color: $color-texto-principal;
+      letter-spacing: -0.2px;
+    }
+
+    .btn-inspeccionar-inline {
+      border: none;
+      background: none;
+      color: $color-primario;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+
+      &:hover {
+        color: $color-primario-oscuro;
+      }
+    }
+  }
+
+  .timestamp-evento {
+    font-size: 13px;
+    color: $color-texto-atenuado;
+    font-weight: 500;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Badges de Estados y Transicion
+// -----------------------------------------------------------------------------
+.badge-transicion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  .flecha-transicion {
+    color: $color-texto-atenuado;
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+
+  &.estado-inicio {
+    background-color: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+  }
+
+  &.estado-creado {
+    background-color: $estado-creado-bg;
+    color: $estado-creado-txt;
+    border-color: $estado-creado-borde;
+  }
+
+  &.estado-aceptado {
+    background-color: $estado-aceptado-bg;
+    color: $estado-aceptado-txt;
+    border-color: $estado-aceptado-borde;
+  }
+
+  &.estado-en-bodega {
+    background-color: $estado-bodega-bg;
+    color: $estado-bodega-txt;
+    border-color: $estado-bodega-borde;
+  }
+
+  &.estado-en-ruta {
+    background-color: $estado-ruta-bg;
+    color: $estado-ruta-txt;
+    border-color: $estado-ruta-borde;
+  }
+
+  &.estado-entregado {
+    background-color: $estado-entregado-bg;
+    color: $estado-entregado-txt;
+    border-color: $estado-entregado-borde;
+  }
+
+  &.estado-cancelado {
+    background-color: $estado-cancelado-bg;
+    color: $estado-cancelado-txt;
+    border-color: $estado-cancelado-borde;
+  }
+
+  &.estado-generico {
+    background-color: #f1f5f9;
+    color: #475569;
+    border-color: $color-borde;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Metadatos de Tarjeta
+// -----------------------------------------------------------------------------
+.metadatos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+
+  .dato-metadato {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .clave-meta {
+      font-size: 11px;
+      font-weight: 600;
+      color: $color-texto-atenuado;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .valor-meta {
+      color: $color-texto-principal;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+
+      &.valor-mono {
+        font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 12px;
+        color: #334155;
+        word-break: break-all;
+      }
+
+      .rol-etiqueta {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+      }
+    }
+  }
+}
+
+.btn-copiar-mini {
+  border: 1px solid $color-borde;
+  background-color: #f8fafc;
+  color: $color-texto-secundario;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e2e8f0;
+    color: $color-texto-principal;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Seccion de Detalles Tecnicos Expandibles
+// -----------------------------------------------------------------------------
+.seccion-detalles-tecnicos {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed $color-borde;
+
+  .acciones-detalles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .btn-toggle-detalles {
+      border: none;
+      background: none;
+      color: $color-primario;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+
+      &:hover {
+        color: $color-primario-oscuro;
+      }
+
+      .icono-chevron {
+        transition: transform 0.2s;
+        &.abierto {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    .btn-switch-json {
+      border: 1px solid $color-borde;
+      background-color: #f8fafc;
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-texto-secundario;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #e2e8f0;
+      }
+    }
+  }
+
+  .panel-contenido-detalles {
+    margin-top: 14px;
+    background-color: #f8fafc;
+    border: 1px solid $color-borde;
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .grid-detalles-estructurados {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+
+    .item-detalle {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 6px 10px;
+      background-color: $color-blanco;
+      border: 1px solid $color-borde;
+      border-radius: 6px;
+
+      .clave-detalle {
+        font-size: 11px;
+        font-weight: 600;
+        color: $color-texto-atenuado;
+      }
+
+      .valor-detalle {
+        font-size: 13px;
+        font-weight: 600;
+        color: $color-texto-principal;
+      }
+    }
+  }
+
+  .visor-json-crudo {
+    position: relative;
+
+    pre {
+      margin: 0;
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 14px;
+      border-radius: 6px;
+      font-family: SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+
+    .btn-copiar-json {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Barra de Paginacion
+// -----------------------------------------------------------------------------
+.barra-paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding: 16px 20px;
+  background-color: $color-blanco;
+  border: 1px solid $color-borde;
+  border-radius: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .info-paginacion {
+    font-size: 13px;
+    color: $color-texto-secundario;
+  }
+
+  .controles-paginacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .btn-pag {
+      border: 1px solid $color-borde;
+      background-color: $color-blanco;
+      color: $color-texto-principal;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background-color: #f1f5f9;
+        border-color: $color-borde-fuerte;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .indicador-pagina {
+      padding: 6px 12px;
+      background-color: $color-primario-suave;
+      color: $color-primario-oscuro;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 6px;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// VISTA 2: INSPECCION FORENSE POR ENVIO
+// -----------------------------------------------------------------------------
+.seccion-trazabilidad-forense {
+  .cabecera-forense {
+    background-color: $color-blanco;
+    border: 1px solid $color-borde;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    .resumen-envio-forense {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+
+      .columna-info-envio {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .subtitulo-forense {
+          font-size: 12px;
+          font-weight: 700;
+          color: $color-primario;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .codigo-envio-forense {
+          font-size: 26px;
+          font-weight: 900;
+          color: $color-texto-principal;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+
+        .envio-id-etiqueta {
+          font-size: 13px;
+          color: $color-texto-atenuado;
+        }
+      }
+
+      .metadatos-forenses-badge {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .dato-resumen {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          align-items: flex-end;
+
+          .etiqueta-resumen {
+            font-size: 12px;
+            color: $color-texto-atenuado;
+            font-weight: 600;
+          }
+
+          .valor-resumen {
+            font-size: 18px;
+            font-weight: 800;
+            color: $color-texto-principal;
+          }
+        }
+      }
+    }
+  }
+
+  .timeline-forense-pasos {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .paso-forense {
+      display: flex;
+      gap: 20px;
+      position: relative;
+
+      .columna-nodo-paso {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+
+        .numero-paso-badge {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          display: grid;
+          place-items: center;
+          font-size: 16px;
+          font-weight: 900;
+          border: 2px solid $color-borde;
+          background-color: $color-blanco;
+          z-index: 2;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+          &.estado-creado {
+            border-color: $estado-creado-borde;
+            background-color: $estado-creado-bg;
+            color: $estado-creado-txt;
+          }
+
+          &.estado-aceptado {
+            border-color: $estado-aceptado-borde;
+            background-color: $estado-aceptado-bg;
+            color: $estado-aceptado-txt;
+          }
+
+          &.estado-en-bodega {
+            border-color: $estado-bodega-borde;
+            background-color: $estado-bodega-bg;
+            color: $estado-bodega-txt;
+          }
+
+          &.estado-en-ruta {
+            border-color: $estado-ruta-borde;
+            background-color: $estado-ruta-bg;
+            color: $estado-ruta-txt;
+          }
+
+          &.estado-entregado {
+            border-color: $estado-entregado-borde;
+            background-color: $estado-entregado-bg;
+            color: $estado-entregado-txt;
+          }
+
+          &.estado-cancelado {
+            border-color: $estado-cancelado-borde;
+            background-color: $estado-cancelado-bg;
+            color: $estado-cancelado-txt;
+          }
+        }
+
+        .linea-paso-conectora {
+          width: 3px;
+          flex: 1;
+          background-color: $color-borde-fuerte;
+          margin-top: 6px;
+        }
+      }
+
+      &.paso-final .linea-paso-conectora {
+        display: none;
+      }
+
+      .tarjeta-paso-forense {
+        background-color: $color-blanco;
+        border: 1px solid $color-borde;
+        border-radius: 12px;
+        padding: 22px 26px;
+        flex: 1;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+
+        .cabecera-paso {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+          padding-bottom: 16px;
+          border-bottom: 1px solid $color-borde;
+          margin-bottom: 16px;
+
+          .titulo-paso {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            .etiqueta-paso-numero {
+              font-size: 11px;
+              font-weight: 700;
+              color: $color-texto-atenuado;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            .nombre-evento-paso {
+              font-size: 17px;
+              font-weight: 800;
+              color: $color-texto-principal;
+              margin: 0;
+            }
+          }
+        }
+
+        .detalles-paso-grid {
+          margin-top: 18px;
+          padding-top: 14px;
+          border-top: 1px solid $color-borde;
+
+          .subtitulo-detalles-paso {
+            font-size: 12px;
+            font-weight: 700;
+            color: $color-texto-atenuado;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 12px 0;
+          }
+
+          .visor-json-crudo-forense {
+            margin-top: 12px;
+
+            pre {
+              margin: 0;
+              background-color: #0f172a;
+              color: #f8fafc;
+              padding: 14px;
+              border-radius: 6px;
+              font-family: SFMono-Regular, Consolas, monospace;
+              font-size: 12px;
+              overflow-x: auto;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Adaptabilidad Responsiva
+// -----------------------------------------------------------------------------
+@media (max-width: 768px) {
+  .barra-superior .navegacion-superior {
+    display: none;
+  }
+
+  .encabezado-seccion {
+    flex-direction: column;
+    align-items: stretch;
+
+    .acciones-encabezado {
+      justify-content: space-between;
+    }
+  }
+
+  .barra-busqueda-envio {
+    flex-direction: column;
+    align-items: stretch;
+
+    .formulario-busqueda-rapida {
+      max-width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  .panel-filtros .fila-filtros {
+    flex-direction: column;
+    align-items: stretch;
+
+    .acciones-filtro {
+      justify-content: flex-end;
+    }
+  }
+
+  .timeline-cronologico .item-timeline {
+    gap: 12px;
+
+    .nodo-timeline .circulo-icono {
+      width: 36px;
+      height: 36px;
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .seccion-trazabilidad-forense .resumen-envio-forense {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .metadatos-forenses-badge {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+}
