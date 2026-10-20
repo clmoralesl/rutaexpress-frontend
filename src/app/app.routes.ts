@@ -9,6 +9,7 @@ import { Landing } from './features/landing/landing';
 import { RastreoComponent } from './features/rastreo/rastreo.component';
 import { CatalogoComponent } from './features/catalogo/catalogo.component';
 import { AuditoriaComponent } from './features/auditoria/auditoria.component';
+import { ReportesComponent } from './features/reportes/reportes.component';
 
 export const routes: Routes = [
   {
@@ -39,6 +40,10 @@ export const routes: Routes = [
   {
     path: 'auditoria/:envioId',
     component: AuditoriaComponent
+  },
+  {
+    path: 'reportes',
+    component: ReportesComponent
   },
   {
     path: 'dashboard',
