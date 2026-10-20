@@ -73,6 +73,11 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   );
 
   protectedResourceMap.set(
+    `${environment.apiUrl}/api/bff/auditoria*`,
+    null
+  );
+
+  protectedResourceMap.set(
     `${environment.apiUrl}/api/*`,
     environment.azure.scopes
   );

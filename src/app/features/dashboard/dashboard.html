@@ -57,9 +57,17 @@
 
       <a
         class="menu-item"
-        *ngIf="tieneRol('ADMIN', 'DESPACHADOR')">
+        routerLink="/catalogo">
         <span>▣</span>
         Catálogo
+      </a>
+
+      <a
+        class="menu-item"
+        routerLink="/auditoria"
+        *ngIf="tieneRol('ADMIN', 'AUDITOR')">
+        <span>◫</span>
+        Auditoría
       </a>
 
       <a
