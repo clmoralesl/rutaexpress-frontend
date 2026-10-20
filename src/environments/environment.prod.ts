@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
 
-  apiUrl: 'https://ekqugjzknl.execute-api.us-east-1.amazonaws.com', // AWS API Gateway HTTP API v2
+  apiUrl: '', // Fachada Same-Origin mediante Nginx Reverse Proxy (/api/)
 
   azure: {
     tenantId: 'e4f9c581-8160-4c70-8316-b47f57cd4965',
