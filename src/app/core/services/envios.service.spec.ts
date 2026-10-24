@@ -116,4 +116,17 @@ describe('EnviosService', () => {
       expect(completado).toBeTrue();
     });
   });
+
+  describe('obtenerRegiones', () => {
+    it('debe solicitar catalogo geografico a /api/bff/envios/geografia/regiones', () => {
+      service.obtenerRegiones().subscribe((regiones) => {
+        expect(regiones.length).toBe(1);
+        expect(regiones[0].nombre).toBe('Metropolitana');
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/geografia/regiones`);
+      expect(req.request.method).toBe('GET');
+      req.flush([{ idRegion: 13, nombre: 'Metropolitana', comunas: [] }]);
+    });
+  });
 });

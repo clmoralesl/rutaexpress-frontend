@@ -225,3 +225,90 @@ th {
   background-color: #ff641c;
   border-color: #ff641c;
 }
+
+
+/* Estilos para direcciones estructuradas Issue #57 */
+.alerta-codigo-automatico {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  color: #166534;
+  font-size: 14px;
+}
+
+.alerta-codigo-automatico code {
+  background: #dcfce7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: #14532d;
+}
+
+.etiqueta-info {
+  font-weight: 700;
+  color: #15803d;
+  margin-right: 6px;
+}
+
+.datos-generales {
+  margin-bottom: 20px;
+}
+
+.direcciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.grupo-direccion {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.grupo-direccion legend {
+  font-weight: 700;
+  font-size: 15px;
+  padding: 0 8px;
+  color: #1e293b;
+}
+
+.form-grid-direccion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-grid-direccion .campo-calle {
+  grid-column: 1 / -1;
+}
+
+.form-grid-direccion .campo-complemento {
+  grid-column: 1 / -1;
+}
+
+.numero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sn-checkbox-label {
+  font-size: 12px;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.sn-checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: auto;
+  padding: 0;
+}

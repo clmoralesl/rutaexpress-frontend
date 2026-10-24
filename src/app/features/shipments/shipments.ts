@@ -7,10 +7,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import {
+  Comuna,
   CrearEnvioRequest,
   Envio,
   EnviosService,
-  FiltrosEnvios
+  FiltrosEnvios,
+  Region
 } from '../../core/services/envios.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { EtiquetaModalComponent } from './components/etiqueta-modal/etiqueta-modal.component';
@@ -33,10 +35,17 @@ import { EtiquetaModalComponent } from './components/etiqueta-modal/etiqueta-mod
 export class Shipments implements OnInit {
 
   envios: Envio[] = [];
+  regiones: Region[] = [];
+  comunasOrigen: Comuna[] = [];
+  comunasDestino: Comuna[] = [];
+
   confirmacionVisible = false;
   envioPendiente: Envio | null = null;
   estadoPendiente = '';
   cargando = false;
+  cargandoRegiones = false;
+  creandoEnvio = false;
+  codigoCreadoReciente = '';
   error = '';
   mensaje = '';
 
@@ -75,17 +84,77 @@ export class Shipments implements OnInit {
     private notifications: NotificationService
   ) {
     this.formularioEnvio = this.fb.nonNullable.group({
-      codigoSeguimiento: ['', Validators.required],
       rutRemitente: ['', Validators.required],
       rutDestinatario: ['', Validators.required],
-      direccionOrigen: ['', Validators.required],
-      direccionDestino: ['', Validators.required],
-      pesoKg: [0, [Validators.required, Validators.min(0.01)]]
+      pesoKg: [0, [Validators.required, Validators.min(0.01)]],
+      origen: this.fb.nonNullable.group({
+        idRegion: [0, [Validators.required, Validators.min(1)]],
+        idComuna: [0, [Validators.required, Validators.min(1)]],
+        calle: ['', [Validators.required, Validators.maxLength(120)]],
+        numero: ['', [Validators.required, Validators.maxLength(20)]],
+        complemento: ['']
+      }),
+      destino: this.fb.nonNullable.group({
+        idRegion: [0, [Validators.required, Validators.min(1)]],
+        idComuna: [0, [Validators.required, Validators.min(1)]],
+        calle: ['', [Validators.required, Validators.maxLength(120)]],
+        numero: ['', [Validators.required, Validators.maxLength(20)]],
+        complemento: ['']
+      })
     });
   }
 
   ngOnInit(): void {
+    this.cargarRegiones();
     this.cargarEnvios();
+  }
+
+  cargarRegiones(): void {
+    this.cargandoRegiones = true;
+    this.enviosService.obtenerRegiones().subscribe({
+      next: (regiones) => {
+        this.regiones = regiones;
+        this.cargandoRegiones = false;
+      },
+      error: () => {
+        this.cargandoRegiones = false;
+        this.notifications.warning('No fue posible cargar el catálogo de regiones.');
+      }
+    });
+  }
+
+  onRegionOrigenChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const idRegion = Number(select.value);
+    const region = this.regiones.find(r => r.idRegion === idRegion);
+    this.comunasOrigen = region ? region.comunas : [];
+    this.formularioEnvio.controls.origen.controls.idComuna.setValue(0);
+  }
+
+  onRegionDestinoChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const idRegion = Number(select.value);
+    const region = this.regiones.find(r => r.idRegion === idRegion);
+    this.comunasDestino = region ? region.comunas : [];
+    this.formularioEnvio.controls.destino.controls.idComuna.setValue(0);
+  }
+
+  toggleSinNumeroOrigen(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this.formularioEnvio.controls.origen.controls.numero.setValue('S/N');
+    } else if (this.formularioEnvio.controls.origen.controls.numero.value === 'S/N') {
+      this.formularioEnvio.controls.origen.controls.numero.setValue('');
+    }
+  }
+
+  toggleSinNumeroDestino(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this.formularioEnvio.controls.destino.controls.numero.setValue('S/N');
+    } else if (this.formularioEnvio.controls.destino.controls.numero.value === 'S/N') {
+      this.formularioEnvio.controls.destino.controls.numero.setValue('');
+    }
   }
 
   puedeGestionarEstados(): boolean {
@@ -126,30 +195,66 @@ export class Shipments implements OnInit {
 
     if (this.formularioEnvio.invalid) {
       this.formularioEnvio.markAllAsTouched();
-      this.error = 'Completa correctamente todos los campos obligatorios.';
+      this.error = 'Completa correctamente todos los campos obligatorios del envío y las direcciones.';
       this.notifications.warning(this.error);
       return;
     }
 
-    const request: CrearEnvioRequest = this.formularioEnvio.getRawValue();
+    const formVal = this.formularioEnvio.getRawValue();
+    const request: CrearEnvioRequest = {
+      rutRemitente: formVal.rutRemitente.trim(),
+      rutDestinatario: formVal.rutDestinatario.trim(),
+      pesoKg: formVal.pesoKg,
+      origen: {
+        calle: formVal.origen.calle.trim(),
+        numero: formVal.origen.numero.trim(),
+        complemento: formVal.origen.complemento?.trim() || null,
+        idComuna: Number(formVal.origen.idComuna)
+      },
+      destino: {
+        calle: formVal.destino.calle.trim(),
+        numero: formVal.destino.numero.trim(),
+        complemento: formVal.destino.complemento?.trim() || null,
+        idComuna: Number(formVal.destino.idComuna)
+      }
+    };
 
+    this.creandoEnvio = true;
     this.enviosService.crear(request).subscribe({
-      next: () => {
-        this.mensaje = 'Envío creado correctamente.';
-        this.notifications.success('Envío creado correctamente.');
+      next: (nuevoEnvio) => {
+        this.creandoEnvio = false;
+        this.codigoCreadoReciente = nuevoEnvio.codigoSeguimiento;
+        const msg = `Envío registrado exitosamente. Código institucional asignado: ${nuevoEnvio.codigoSeguimiento}`;
+        this.mensaje = msg;
+        this.notifications.success(msg);
         this.formularioEnvio.reset({
-          codigoSeguimiento: '',
           rutRemitente: '',
           rutDestinatario: '',
-          direccionOrigen: '',
-          direccionDestino: '',
-          pesoKg: 0
+          pesoKg: 0,
+          origen: {
+            idRegion: 0,
+            idComuna: 0,
+            calle: '',
+            numero: '',
+            complemento: ''
+          },
+          destino: {
+            idRegion: 0,
+            idComuna: 0,
+            calle: '',
+            numero: '',
+            complemento: ''
+          }
         });
+        this.comunasOrigen = [];
+        this.comunasDestino = [];
         this.cargarEnvios();
       },
-      error: () => {
-        this.notifications.error('No fue posible crear el envío.');
-        this.error = 'No fue posible crear el envío.';
+      error: (err) => {
+        this.creandoEnvio = false;
+        const errorMsg = err?.error?.mensaje || 'No fue posible crear el envío.';
+        this.notifications.error(errorMsg);
+        this.error = errorMsg;
       }
     });
   }
@@ -205,7 +310,6 @@ export class Shipments implements OnInit {
         this.notifications.info(`Comando de rotulado para ${envio.codigoSeguimiento} registrado en RabbitMQ.`);
       },
       error: () => {
-        // En caso de contingencia o demora de red, la previsualizacion e impresion local permanecen activas
         this.encoladoRabbitMQ = false;
       }
     });

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { Shipments } from './shipments';
-import { EnviosService, Envio } from '../../core/services/envios.service';
+import { EnviosService, Envio, Region } from '../../core/services/envios.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 
@@ -12,14 +12,33 @@ describe('Shipments Component', () => {
   let authServiceMock: jasmine.SpyObj<AuthService>;
   let notificationServiceMock: jasmine.SpyObj<NotificationService>;
 
+  const mockRegiones: Region[] = [
+    {
+      idRegion: 13,
+      nombre: 'Metropolitana de Santiago',
+      comunas: [
+        { idComuna: 13101, nombre: 'Santiago' },
+        { idComuna: 13123, nombre: 'Providencia' }
+      ]
+    },
+    {
+      idRegion: 5,
+      nombre: 'Valparaíso',
+      comunas: [
+        { idComuna: 5101, nombre: 'Valparaíso' },
+        { idComuna: 5109, nombre: 'Viña del Mar' }
+      ]
+    }
+  ];
+
   const listaEnviosMock: Envio[] = [
     {
       id: 1,
-      codigoSeguimiento: 'RE-2026-001',
+      codigoSeguimiento: 'RTX-2026-000001',
       rutRemitente: '11111111-1',
       rutDestinatario: '22222222-2',
-      direccionOrigen: 'Origen 1',
-      direccionDestino: 'Destino 1',
+      direccionOrigen: 'Av. Providencia 1234, Providencia, Metropolitana de Santiago',
+      direccionDestino: 'Av. Libertad 500, Viña del Mar, Valparaíso',
       pesoKg: 2.5,
       estado: 'CREADO',
       fechaCreacion: '2026-10-18T10:00:00Z',
@@ -27,11 +46,11 @@ describe('Shipments Component', () => {
     },
     {
       id: 2,
-      codigoSeguimiento: 'RE-2026-002',
+      codigoSeguimiento: 'RTX-2026-000002',
       rutRemitente: '33333333-3',
       rutDestinatario: '44444444-4',
-      direccionOrigen: 'Origen 2',
-      direccionDestino: 'Destino 2',
+      direccionOrigen: 'Calle Nueva 100, Santiago, Metropolitana de Santiago',
+      direccionDestino: 'Av. Marina 200, Viña del Mar, Valparaíso',
       pesoKg: 6.0,
       estado: 'ACEPTADO',
       fechaCreacion: '2026-10-19T12:00:00Z',
@@ -44,7 +63,8 @@ describe('Shipments Component', () => {
       'listar',
       'crear',
       'actualizarEstado',
-      'solicitarEtiqueta'
+      'solicitarEtiqueta',
+      'obtenerRegiones'
     ]);
     authServiceMock = jasmine.createSpyObj('AuthService', ['tieneRol']);
     notificationServiceMock = jasmine.createSpyObj('NotificationService', [
@@ -56,6 +76,7 @@ describe('Shipments Component', () => {
 
     enviosServiceMock.listar.and.returnValue(of(listaEnviosMock));
     enviosServiceMock.solicitarEtiqueta.and.returnValue(of(undefined as unknown as void));
+    enviosServiceMock.obtenerRegiones.and.returnValue(of(mockRegiones));
     authServiceMock.tieneRol.and.returnValue(true);
 
     await TestBed.configureTestingModule({
@@ -72,10 +93,102 @@ describe('Shipments Component', () => {
     fixture.detectChanges();
   });
 
-  it('debe crearse e inicializar listado de envios', () => {
+  it('debe crearse e inicializar listado de envios y catalogo geografico', () => {
     expect(component).toBeTruthy();
     expect(enviosServiceMock.listar).toHaveBeenCalled();
+    expect(enviosServiceMock.obtenerRegiones).toHaveBeenCalled();
     expect(component.envios.length).toBe(2);
+    expect(component.regiones.length).toBe(2);
+  });
+
+  it('debe filtrar comunas dependientes al seleccionar una region de origen', () => {
+    const mockSelectEvent = {
+      target: { value: '13' }
+    } as unknown as Event;
+
+    component.onRegionOrigenChange(mockSelectEvent);
+
+    expect(component.comunasOrigen.length).toBe(2);
+    expect(component.comunasOrigen[0].nombre).toBe('Santiago');
+    expect(component.formularioEnvio.controls.origen.controls.idComuna.value).toBe(0);
+  });
+
+  it('debe asignar S/N al activar checkbox de sin numero y restaurar vacio al desmarcar', () => {
+    const eventChecked = {
+      target: { checked: true }
+    } as unknown as Event;
+
+    component.toggleSinNumeroOrigen(eventChecked);
+    expect(component.formularioEnvio.controls.origen.controls.numero.value).toBe('S/N');
+
+    const eventUnchecked = {
+      target: { checked: false }
+    } as unknown as Event;
+
+    component.toggleSinNumeroOrigen(eventUnchecked);
+    expect(component.formularioEnvio.controls.origen.controls.numero.value).toBe('');
+  });
+
+  it('debe crear envio con direccion estructurada y mostrar codigo institucional', () => {
+    const nuevoEnvioMock: Envio = {
+      id: 3,
+      codigoSeguimiento: 'RTX-2026-ABCDEF',
+      rutRemitente: '12345678-5',
+      rutDestinatario: '98765432-1',
+      direccionOrigen: 'Av. Providencia 1234, Providencia, Metropolitana de Santiago',
+      direccionDestino: 'Av. Marina 200, Viña del Mar, Valparaíso',
+      pesoKg: 3.5,
+      estado: 'CREADO',
+      fechaCreacion: '2026-10-23T20:00:00Z',
+      fechaActualizacion: '2026-10-23T20:00:00Z'
+    };
+
+    enviosServiceMock.crear.and.returnValue(of(nuevoEnvioMock));
+
+    component.formularioEnvio.setValue({
+      rutRemitente: '12345678-5',
+      rutDestinatario: '98765432-1',
+      pesoKg: 3.5,
+      origen: {
+        idRegion: 13,
+        idComuna: 13123,
+        calle: 'Av. Providencia',
+        numero: '1234',
+        complemento: 'Depto 302'
+      },
+      destino: {
+        idRegion: 5,
+        idComuna: 5109,
+        calle: 'Av. Marina',
+        numero: '200',
+        complemento: ''
+      }
+    });
+
+    component.crearEnvio();
+
+    expect(enviosServiceMock.crear).toHaveBeenCalledWith({
+      rutRemitente: '12345678-5',
+      rutDestinatario: '98765432-1',
+      pesoKg: 3.5,
+      origen: {
+        calle: 'Av. Providencia',
+        numero: '1234',
+        complemento: 'Depto 302',
+        idComuna: 13123
+      },
+      destino: {
+        calle: 'Av. Marina',
+        numero: '200',
+        complemento: null,
+        idComuna: 5109
+      }
+    });
+
+    expect(component.codigoCreadoReciente).toBe('RTX-2026-ABCDEF');
+    expect(notificationServiceMock.success).toHaveBeenCalledWith(
+      jasmine.stringMatching(/RTX-2026-ABCDEF/)
+    );
   });
 
   it('debe permitir filtrar envios por estado y fechas', () => {
@@ -110,7 +223,7 @@ describe('Shipments Component', () => {
     expect(enviosServiceMock.solicitarEtiqueta).toHaveBeenCalledWith(envio.id);
     expect(component.encoladoRabbitMQ).toBeTrue();
     expect(notificationServiceMock.info).toHaveBeenCalledWith(
-      jasmine.stringMatching(/RE-2026-001/)
+      jasmine.stringMatching(/RTX-2026-000001/)
     );
   });
 

@@ -1,9 +1,15 @@
 <section class="shipments-page">
 
   <div class="encabezado-pagina">
-  <h1>Gestión de envíos</h1>
-  <a href="/dashboard" class="boton-volver">← Volver al Dashboard</a>
-</div>
+    <h1>Gestión de envíos</h1>
+    <a href="/dashboard" class="boton-volver">← Volver al Dashboard</a>
+  </div>
+
+  <!-- Alerta de éxito con código de seguimiento institucional generado -->
+  <div *ngIf="codigoCreadoReciente" class="notificacion exito">
+    <strong>¡Envío creado exitosamente!</strong>
+    <p>El sistema asignó de forma autónoma el código de seguimiento: <strong>{{ codigoCreadoReciente }}</strong></p>
+  </div>
 
   <section class="panel">
     <h2>Crear envío</h2>
@@ -11,118 +17,245 @@
     <form
       [formGroup]="formularioEnvio"
       (ngSubmit)="crearEnvio()"
-      class="form-grid">
+      class="formulario-envio-completo">
 
-      <div class="campo">
-        <label for="codigoSeguimiento">Código de seguimiento</label>
-        <input
-          id="codigoSeguimiento"
-          type="text"
-          formControlName="codigoSeguimiento">
-
-        <small
-          *ngIf="
-            formularioEnvio.controls.codigoSeguimiento.touched &&
-            formularioEnvio.controls.codigoSeguimiento.invalid
-          ">
-          El código de seguimiento es obligatorio.
-        </small>
+      <!-- Informacion de Codigo Automatico -->
+      <div class="alerta-codigo-automatico">
+        <span class="etiqueta-info">Asignación Automática:</span>
+        El código de seguimiento institucional (formato <code>RTX-YYYY-XXXXXX</code>) se genera de forma autónoma al registrar el envío.
       </div>
 
-      <div class="campo">
-        <label for="rutRemitente">RUT remitente</label>
-        <input
-          id="rutRemitente"
-          type="text"
-          formControlName="rutRemitente">
+      <!-- Datos Principales del Envio -->
+      <div class="form-grid datos-generales">
+        <div class="campo">
+          <label for="rutRemitente">RUT remitente</label>
+          <input
+            id="rutRemitente"
+            type="text"
+            placeholder="Ej: 12.345.678-9"
+            formControlName="rutRemitente">
 
-        <small
-          *ngIf="
-            formularioEnvio.controls.rutRemitente.touched &&
-            formularioEnvio.controls.rutRemitente.invalid
-          ">
-          El RUT del remitente es obligatorio.
-        </small>
+          <small
+            *ngIf="
+              formularioEnvio.controls.rutRemitente.touched &&
+              formularioEnvio.controls.rutRemitente.invalid
+            ">
+            El RUT del remitente es obligatorio.
+          </small>
+        </div>
+
+        <div class="campo">
+          <label for="rutDestinatario">RUT destinatario</label>
+          <input
+            id="rutDestinatario"
+            type="text"
+            placeholder="Ej: 98.765.432-1"
+            formControlName="rutDestinatario">
+
+          <small
+            *ngIf="
+              formularioEnvio.controls.rutDestinatario.touched &&
+              formularioEnvio.controls.rutDestinatario.invalid
+            ">
+            El RUT del destinatario es obligatorio.
+          </small>
+        </div>
+
+        <div class="campo">
+          <label for="pesoKg">Peso (kg)</label>
+          <input
+            id="pesoKg"
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+            formControlName="pesoKg">
+
+          <small
+            *ngIf="
+              formularioEnvio.controls.pesoKg.touched &&
+              formularioEnvio.controls.pesoKg.invalid
+            ">
+            El peso debe ser mayor que 0.
+          </small>
+        </div>
       </div>
 
-      <div class="campo">
-        <label for="rutDestinatario">RUT destinatario</label>
-        <input
-          id="rutDestinatario"
-          type="text"
-          formControlName="rutDestinatario">
+      <!-- Secciones de Direcciones Estructuradas -->
+      <div class="direcciones-grid">
 
-        <small
-          *ngIf="
-            formularioEnvio.controls.rutDestinatario.touched &&
-            formularioEnvio.controls.rutDestinatario.invalid
-          ">
-          El RUT del destinatario es obligatorio.
-        </small>
-      </div>
+        <!-- Direccion de Origen -->
+        <fieldset formGroupName="origen" class="grupo-direccion">
+          <legend>Dirección de Origen</legend>
 
-      <div class="campo">
-        <label for="direccionOrigen">Dirección de origen</label>
-        <input
-          id="direccionOrigen"
-          type="text"
-          formControlName="direccionOrigen">
+          <div class="form-grid-direccion">
+            <div class="campo">
+              <label for="origenRegion">Región</label>
+              <select
+                id="origenRegion"
+                formControlName="idRegion"
+                (change)="onRegionOrigenChange($event)">
+                <option [value]="0">Seleccione una región</option>
+                <option *ngFor="let reg of regiones" [value]="reg.idRegion">
+                  {{ reg.nombre }}
+                </option>
+              </select>
+              <small *ngIf="formularioEnvio.controls.origen.controls.idRegion.touched && formularioEnvio.controls.origen.controls.idRegion.value === 0">
+                Debe seleccionar una región de origen.
+              </small>
+            </div>
 
-        <small
-          *ngIf="
-            formularioEnvio.controls.direccionOrigen.touched &&
-            formularioEnvio.controls.direccionOrigen.invalid
-          ">
-          La dirección de origen es obligatoria.
-        </small>
-      </div>
+            <div class="campo">
+              <label for="origenComuna">Comuna</label>
+              <select
+                id="origenComuna"
+                formControlName="idComuna">
+                <option [value]="0">Seleccione una comuna</option>
+                <option *ngFor="let com of comunasOrigen" [value]="com.idComuna">
+                  {{ com.nombre }}
+                </option>
+              </select>
+              <small *ngIf="formularioEnvio.controls.origen.controls.idComuna.touched && formularioEnvio.controls.origen.controls.idComuna.value === 0">
+                Debe seleccionar una comuna de origen.
+              </small>
+            </div>
 
-      <div class="campo">
-        <label for="direccionDestino">Dirección de destino</label>
-        <input
-          id="direccionDestino"
-          type="text"
-          formControlName="direccionDestino">
+            <div class="campo campo-calle">
+              <label for="origenCalle">Calle / Avenida</label>
+              <input
+                id="origenCalle"
+                type="text"
+                placeholder="Nombre de la calle"
+                formControlName="calle">
+              <small *ngIf="formularioEnvio.controls.origen.controls.calle.touched && formularioEnvio.controls.origen.controls.calle.invalid">
+                La calle es obligatoria.
+              </small>
+            </div>
 
-        <small
-          *ngIf="
-            formularioEnvio.controls.direccionDestino.touched &&
-            formularioEnvio.controls.direccionDestino.invalid
-          ">
-          La dirección de destino es obligatoria.
-        </small>
-      </div>
+            <div class="campo campo-numero">
+              <div class="numero-header">
+                <label for="origenNumero">Número</label>
+                <label class="sn-checkbox-label">
+                  <input
+                    type="checkbox"
+                    (change)="toggleSinNumeroOrigen($event)"
+                    [checked]="formularioEnvio.controls.origen.controls.numero.value === 'S/N'">
+                  S/N
+                </label>
+              </div>
+              <input
+                id="origenNumero"
+                type="text"
+                placeholder="Ej: 1234 o S/N"
+                formControlName="numero">
+              <small *ngIf="formularioEnvio.controls.origen.controls.numero.touched && formularioEnvio.controls.origen.controls.numero.invalid">
+                El número o S/N es obligatorio.
+              </small>
+            </div>
 
-      <div class="campo">
-        <label for="pesoKg">Peso (kg)</label>
-        <input
-          id="pesoKg"
-          type="number"
-          min="0.01"
-          step="0.01"
-          formControlName="pesoKg">
+            <div class="campo campo-complemento">
+              <label for="origenComplemento">Complemento (Opcional)</label>
+              <input
+                id="origenComplemento"
+                type="text"
+                placeholder="Ej: Depto 402, Bodega B"
+                formControlName="complemento">
+            </div>
+          </div>
+        </fieldset>
 
-        <small
-          *ngIf="
-            formularioEnvio.controls.pesoKg.touched &&
-            formularioEnvio.controls.pesoKg.invalid
-          ">
-          El peso debe ser mayor que 0.
-        </small>
+        <!-- Direccion de Destino -->
+        <fieldset formGroupName="destino" class="grupo-direccion">
+          <legend>Dirección de Destino</legend>
+
+          <div class="form-grid-direccion">
+            <div class="campo">
+              <label for="destinoRegion">Región</label>
+              <select
+                id="destinoRegion"
+                formControlName="idRegion"
+                (change)="onRegionDestinoChange($event)">
+                <option [value]="0">Seleccione una región</option>
+                <option *ngFor="let reg of regiones" [value]="reg.idRegion">
+                  {{ reg.nombre }}
+                </option>
+              </select>
+              <small *ngIf="formularioEnvio.controls.destino.controls.idRegion.touched && formularioEnvio.controls.destino.controls.idRegion.value === 0">
+                Debe seleccionar una región de destino.
+              </small>
+            </div>
+
+            <div class="campo">
+              <label for="destinoComuna">Comuna</label>
+              <select
+                id="destinoComuna"
+                formControlName="idComuna">
+                <option [value]="0">Seleccione una comuna</option>
+                <option *ngFor="let com of comunasDestino" [value]="com.idComuna">
+                  {{ com.nombre }}
+                </option>
+              </select>
+              <small *ngIf="formularioEnvio.controls.destino.controls.idComuna.touched && formularioEnvio.controls.destino.controls.idComuna.value === 0">
+                Debe seleccionar una comuna de destino.
+              </small>
+            </div>
+
+            <div class="campo campo-calle">
+              <label for="destinoCalle">Calle / Avenida</label>
+              <input
+                id="destinoCalle"
+                type="text"
+                placeholder="Nombre de la calle"
+                formControlName="calle">
+              <small *ngIf="formularioEnvio.controls.destino.controls.calle.touched && formularioEnvio.controls.destino.controls.calle.invalid">
+                La calle es obligatoria.
+              </small>
+            </div>
+
+            <div class="campo campo-numero">
+              <div class="numero-header">
+                <label for="destinoNumero">Número</label>
+                <label class="sn-checkbox-label">
+                  <input
+                    type="checkbox"
+                    (change)="toggleSinNumeroDestino($event)"
+                    [checked]="formularioEnvio.controls.destino.controls.numero.value === 'S/N'">
+                  S/N
+                </label>
+              </div>
+              <input
+                id="destinoNumero"
+                type="text"
+                placeholder="Ej: 5678 o S/N"
+                formControlName="numero">
+              <small *ngIf="formularioEnvio.controls.destino.controls.numero.touched && formularioEnvio.controls.destino.controls.numero.invalid">
+                El número o S/N es obligatorio.
+              </small>
+            </div>
+
+            <div class="campo campo-complemento">
+              <label for="destinoComplemento">Complemento (Opcional)</label>
+              <input
+                id="destinoComplemento"
+                type="text"
+                placeholder="Ej: Oficina 301, Galpón 2"
+                formControlName="complemento">
+            </div>
+          </div>
+        </fieldset>
+
       </div>
 
       <div class="acciones-formulario">
-        <button type="submit">
-          Crear envío
+        <button
+          type="submit"
+          [disabled]="creandoEnvio">
+          {{ creandoEnvio ? 'Registrando envío...' : 'Crear envío' }}
         </button>
       </div>
 
     </form>
   </section>
-
-  
-
-  
 
   <section class="panel">
     <h2>Listado de envíos</h2>
@@ -269,7 +402,6 @@
   </section>
 
 </section>
-
 
 <app-confirm-dialog
   [visible]="confirmacionVisible"

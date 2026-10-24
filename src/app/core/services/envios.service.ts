@@ -3,6 +3,24 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface Comuna {
+  idComuna: number;
+  nombre: string;
+}
+
+export interface Region {
+  idRegion: number;
+  nombre: string;
+  comunas: Comuna[];
+}
+
+export interface DireccionRequest {
+  calle: string;
+  numero: string;
+  complemento?: string | null;
+  idComuna: number;
+}
+
 export interface Envio {
   id: number;
   codigoSeguimiento: string;
@@ -26,12 +44,14 @@ export interface FiltrosEnvios {
 }
 
 export interface CrearEnvioRequest {
-  codigoSeguimiento: string;
   rutRemitente: string;
   rutDestinatario: string;
-  direccionOrigen: string;
-  direccionDestino: string;
   pesoKg: number;
+  origen?: DireccionRequest;
+  destino?: DireccionRequest;
+  codigoSeguimiento?: string;
+  direccionOrigen?: string;
+  direccionDestino?: string;
 }
 
 export interface ActualizarEstadoRequest {
@@ -46,6 +66,10 @@ export class EnviosService {
   private readonly apiUrl = `${environment.apiUrl}/api/bff/envios`;
 
   constructor(private http: HttpClient) {}
+
+  obtenerRegiones(): Observable<Region[]> {
+    return this.http.get<Region[]>(`${this.apiUrl}/geografia/regiones`);
+  }
 
   listar(filtros: FiltrosEnvios = {}): Observable<Envio[]> {
     let params = new HttpParams();
