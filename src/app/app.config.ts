@@ -7,7 +7,8 @@ import {
   provideZoneChangeDetection
 } from '@angular/core';
 
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { ViewportScroller } from '@angular/common';
 
 import {
   provideHttpClient,
@@ -36,6 +37,15 @@ import {
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+
+export function inicializarOffsetScroll(scroller: ViewportScroller): () => [number, number] {
+  const calculadorOffset = (): [number, number] => [
+    0,
+    document.querySelector('app-navbar')?.getBoundingClientRect().height ?? 64
+  ];
+  scroller.setOffset(calculadorOffset);
+  return calculadorOffset;
+}
 
 export function msalInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
@@ -101,7 +111,13 @@ export const appConfig: ApplicationConfig = {
       eventCoalescing: true
     }),
 
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({
+        anchorScrolling: 'enabled',
+        scrollPositionRestoration: 'enabled'
+      })
+    ),
 
     provideHttpClient(withInterceptorsFromDi()),
 
@@ -131,6 +147,8 @@ export const appConfig: ApplicationConfig = {
     MsalGuard,
 
     provideAppInitializer(async () => {
+      inicializarOffsetScroll(inject(ViewportScroller));
+
       const msalService = inject(MsalService);
 
       await msalService.instance.initialize();

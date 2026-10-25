@@ -12,98 +12,6 @@
   box-sizing: border-box;
 }
 
-// Encabezado Superior
-.barra-superior {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-
-  .contenedor-barra {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo-enlace {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .icono-marca {
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, #ff641c 0%, #e05310 100%);
-    color: #ffffff;
-    font-weight: 900;
-    font-size: 20px;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(255, 100, 28, 0.25);
-  }
-
-  .texto-marca {
-    display: flex;
-    flex-direction: column;
-
-    .nombre-marca {
-      font-size: 18px;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.3px;
-    }
-
-    .subtexto-marca {
-      font-size: 11px;
-      font-weight: 600;
-      color: #ff641c;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-  }
-
-  .navegacion-superior {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    .enlace-inicio {
-      color: #475569;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-
-      &:hover {
-        color: #ff641c;
-      }
-    }
-
-    .boton-acceso {
-      background-color: #f1f5f9;
-      color: #0f172a;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all 0.2s;
-
-      &:hover {
-        background-color: #e2e8f0;
-      }
-    }
-  }
-}
-
 // Contenedor Principal
 .contenedor-principal {
   max-width: 1100px;
@@ -825,7 +733,6 @@
 
 // Reglas de Impresion
 @media print {
-  .barra-superior,
   .seccion-buscador,
   .acciones-compartir,
   .pie-pagina {

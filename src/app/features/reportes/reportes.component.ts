@@ -14,7 +14,6 @@ import {
 import { EmptyStateComponent } from '../../shared/feedback/empty-state.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { SkeletonComponent } from '../../shared/feedback/skeleton.component';
-import { ToastComponent } from '../../shared/feedback/toast.component';
 
 export interface SegmentoDona {
   estado: string;
@@ -42,8 +41,7 @@ export interface PuntoGraficoVolumen {
     CommonModule,
     FormsModule,
     RouterModule,
-    SkeletonComponent,
-    ToastComponent
+    SkeletonComponent
   ],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.scss']
@@ -357,10 +355,4 @@ export class ReportesComponent implements OnInit {
     return this.coloresEstados[estado.toUpperCase()] || '#94a3b8';
   }
 
-  /**
-   * Valida si el usuario actual posee permisos de visualizacion analitica o gerencial.
-   */
-  esAdminOOperador(): boolean {
-    return this.authService.tieneRol('ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_OPERADOR');
-  }
 }

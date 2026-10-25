@@ -19,111 +19,12 @@ button {
   cursor: pointer;
 }
 
-.header {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  min-height: 78px;
-  padding: 14px 6%;
-  background: #fffdfa;
-  border-bottom: 1px solid #eee7df;
-}
-
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-  color: #282522;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.logo-symbol {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: #ff641c;
-  color: #242424;
-  font-size: 27px;
-  font-weight: 900;
-  transform: rotate(-6deg);
-}
-
-.logo-arrow {
-  position: absolute;
-  top: 1px;
-  right: 3px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.logo-name {
-  font-size: 24px;
-  font-weight: 850;
-  letter-spacing: -1.1px;
-}
-
-.logo-name span,
 .footer-logo span {
   font-weight: 450;
 }
 
-.logo-name b,
 .footer-logo b {
   color: #ff641c;
-}
-
-nav {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 23px;
-}
-
-nav a {
-  color: #4a443e;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-nav a:hover {
-  color: #f05c18;
-}
-
-nav button {
-  border: 0;
-  border-radius: 30px;
-  padding: 12px 19px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.nav-button {
-  background: #292623;
-  color: #fff;
-}
-
-.logout-button {
-  background: #f1e9e2;
-  color: #292623;
-}
-
-.nombre-usuario {
-  max-width: 175px;
-  overflow: hidden;
-  color: #504943;
-  font-size: 12px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Portada */
@@ -931,15 +832,6 @@ nav button {
 /* Pantallas medianas */
 
 @media (max-width: 1100px) {
-  .header {
-    padding-left: 4%;
-    padding-right: 4%;
-  }
-
-  nav {
-    gap: 14px;
-  }
-
   .hero-layout {
     gap: 15px;
   }
@@ -953,17 +845,6 @@ nav button {
 /* Tablets */
 
 @media (max-width: 800px) {
-  .header {
-    flex-direction: column;
-    align-items: center;
-    padding: 16px 5%;
-  }
-
-  nav {
-    justify-content: center;
-    gap: 12px 18px;
-  }
-
   .hero {
     padding: 45px 5% 75px;
   }

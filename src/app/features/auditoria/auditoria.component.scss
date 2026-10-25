@@ -55,110 +55,6 @@ $estado-cancelado-borde: #fecdd3;
 }
 
 // -----------------------------------------------------------------------------
-// Barra Superior de Navegacion
-// -----------------------------------------------------------------------------
-.barra-superior {
-  background-color: $color-blanco;
-  border-bottom: 1px solid $color-borde;
-  position: sticky;
-  top: 0;
-  z-index: 40;
-
-  .contenedor-barra {
-    max-width: 1240px;
-    margin: 0 auto;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo-enlace {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .icono-marca {
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, $color-primario 0%, $color-primario-oscuro 100%);
-    color: $color-blanco;
-    font-weight: 900;
-    font-size: 18px;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(255, 100, 28, 0.25);
-  }
-
-  .texto-marca {
-    display: flex;
-    flex-direction: column;
-
-    .nombre-marca {
-      font-size: 17px;
-      font-weight: 800;
-      color: $color-texto-principal;
-      letter-spacing: -0.3px;
-    }
-
-    .subtexto-marca {
-      font-size: 11px;
-      font-weight: 600;
-      color: $color-primario;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-  }
-
-  .navegacion-superior {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    .enlace-nav {
-      font-size: 14px;
-      font-weight: 500;
-      color: $color-texto-secundario;
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        color: $color-primario;
-        background-color: $color-primario-suave;
-      }
-
-      &.activo {
-        color: $color-primario-oscuro;
-        background-color: $color-primario-suave;
-        font-weight: 700;
-      }
-    }
-
-    .rol-badge {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background-color: #f1f5f9;
-      color: #475569;
-      border: 1px solid $color-borde;
-
-      &.es-admin {
-        background-color: #ecfdf5;
-        color: #065f46;
-        border-color: #a7f3d0;
-      }
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
 // Contenedor Principal
 // -----------------------------------------------------------------------------
 .contenedor-principal {
@@ -1250,9 +1146,6 @@ $estado-cancelado-borde: #fecdd3;
 // Adaptabilidad Responsiva
 // -----------------------------------------------------------------------------
 @media (max-width: 768px) {
-  .barra-superior .navegacion-superior {
-    display: none;
-  }
 
   .encabezado-seccion {
     flex-direction: column;

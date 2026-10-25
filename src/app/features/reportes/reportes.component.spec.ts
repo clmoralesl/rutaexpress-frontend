@@ -197,11 +197,4 @@ describe('ReportesComponent', () => {
     expect(component.obtenerEtiquetaRango('historico')).toBe('Historico / Todo');
   });
 
-  it('debe validar permisos de rol con esAdminOOperador', () => {
-    authService.tieneRol.and.returnValue(true);
-    expect(component.esAdminOOperador()).toBeTrue();
-
-    authService.tieneRol.and.returnValue(false);
-    expect(component.esAdminOOperador()).toBeFalse();
-  });
 });

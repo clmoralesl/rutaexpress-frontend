@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { SkeletonComponent } from '../../shared/feedback/skeleton.component';
 import { QrCodeUtil } from '../../shared/utils/qr-code.util';
@@ -21,7 +21,7 @@ interface PasoDefinicion {
 @Component({
   selector: 'app-rastreo',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SkeletonComponent],
+  imports: [CommonModule, FormsModule, SkeletonComponent],
   templateUrl: './rastreo.component.html',
   styleUrl: './rastreo.component.scss'
 })
