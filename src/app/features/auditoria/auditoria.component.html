@@ -1,32 +1,3 @@
-<!-- Notificaciones Toast Globales -->
-<app-toast />
-
-<!-- Barra Superior de Navegacion -->
-<header class="barra-superior" role="banner">
-  <div class="contenedor-barra">
-    <a routerLink="/" class="logo-enlace" aria-label="Ir a la pagina de inicio de RutaExpress">
-      <div class="icono-marca">RE</div>
-      <div class="texto-marca">
-        <span class="nombre-marca">RutaExpress</span>
-        <span class="subtexto-marca">Auditoria & Trazabilidad</span>
-      </div>
-    </a>
-
-    <nav class="navegacion-superior" aria-label="Navegacion principal">
-      <a routerLink="/" class="enlace-nav">Inicio</a>
-      <a routerLink="/rastreo" class="enlace-nav">Rastreo</a>
-      <a routerLink="/catalogo" class="enlace-nav">Catalogo</a>
-      <a routerLink="/auditoria" class="enlace-nav activo">Auditoria</a>
-      <a routerLink="/reportes" class="enlace-nav">Reportes</a>
-      <a routerLink="/dashboard" class="enlace-nav">Dashboard</a>
-      <a routerLink="/envios" class="enlace-nav">Envios</a>
-      <div class="rol-badge" [class.es-admin]="esAdminOAuditor()">
-        Rol: {{ authService.obtenerRolActivo() }}
-      </div>
-    </nav>
-  </div>
-</header>
-
 <!-- Contenido Principal -->
 <main class="contenedor-principal" role="main">
 

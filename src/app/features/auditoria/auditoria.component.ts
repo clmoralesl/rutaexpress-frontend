@@ -12,7 +12,6 @@ import {
 import { EmptyStateComponent } from '../../shared/feedback/empty-state.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { SkeletonComponent } from '../../shared/feedback/skeleton.component';
-import { ToastComponent } from '../../shared/feedback/toast.component';
 
 @Component({
   selector: 'app-auditoria',
@@ -23,8 +22,7 @@ import { ToastComponent } from '../../shared/feedback/toast.component';
     ReactiveFormsModule,
     RouterModule,
     SkeletonComponent,
-    EmptyStateComponent,
-    ToastComponent
+    EmptyStateComponent
   ],
   templateUrl: './auditoria.component.html',
   styleUrls: ['./auditoria.component.scss']
@@ -387,12 +385,6 @@ export class AuditoriaComponent implements OnInit {
     return JSON.stringify(evento.detalles, null, 2);
   }
 
-  /**
-   * Determina si el usuario actual posee permisos de administracion o auditoria.
-   */
-  esAdminOAuditor(): boolean {
-    return this.authService.tieneRol('ROLE_ADMIN', 'ROLE_AUDITOR');
-  }
 
   /**
    * Cambia de pagina en la paginacion del flujo global.

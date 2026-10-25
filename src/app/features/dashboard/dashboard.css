@@ -1,7 +1,6 @@
-
 /* =========================================
    RUTAEXPRESS - DASHBOARD
-   Identidad visual corporativa
+   Layout y contenido del panel principal (issue #61)
    ========================================= */
 
 * {
@@ -10,7 +9,7 @@
 
 :host {
   display: block;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--navbar-alto, 64px));
   font-family: 'Segoe UI', Arial, sans-serif;
   color: #282522;
 }
@@ -20,171 +19,9 @@
    ========================================= */
 
 .layout {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  grid-template-rows: 76px 1fr;
-  grid-template-areas:
-    "navbar navbar"
-    "sidebar contenido";
-  background: #faf7f3;
-}
-
-/* =========================================
-   BARRA SUPERIOR
-   ========================================= */
-
-.navbar {
-  grid-area: navbar;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 0 32px;
-  background: #fffdfa;
-  border-bottom: 1px solid #eee5dc;
-  box-shadow: 0 2px 10px rgba(40, 37, 34, 0.04);
-  z-index: 10;
-}
-
-.marca {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.logo {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  background: #ff641c;
-  color: #242424;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 25px;
-  font-weight: 900;
-  box-shadow: 0 5px 14px rgba(255, 100, 28, 0.18);
-}
-
-.marca h1 {
-  margin: 0;
-  color: #282522;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.7px;
-}
-
-.marca small {
+  min-height: calc(100vh - var(--navbar-alto, 64px));
   display: block;
-  margin-top: 3px;
-  color: #887c72;
-  font-size: 12px;
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 18px;
-  min-width: 0;
-}
-
-.datos-usuario {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  text-align: right;
-}
-
-.nombre {
-  max-width: 340px;
-  overflow: hidden;
-  color: #282522;
-  font-size: 13px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.rol {
-  margin-top: 4px;
-  color: #e85e1c;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-}
-
-.btn-salir {
-  padding: 10px 17px;
-  border: 1px solid #e7dcd2;
-  border-radius: 9px;
-  background: #fffdfa;
-  color: #403a35;
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.btn-salir:hover {
-  background: #fff0e5;
-  border-color: #ffbd96;
-}
-
-/* =========================================
-   MENÚ LATERAL
-   ========================================= */
-
-.sidebar {
-  grid-area: sidebar;
-  padding: 28px 15px;
-  background: #282522;
-}
-
-.titulo-menu {
-  margin-bottom: 17px;
-  padding: 0 13px;
-  color: #b9aaa0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.6px;
-}
-
-.sidebar nav {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 14px;
-  border-radius: 10px;
-  color: #d9d0c9;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.menu-item:hover {
-  background: #403a35;
-  color: #ffffff;
-}
-
-.menu-item.activo {
-  background: #ff641c;
-  color: #242424;
-  font-weight: 700;
-  box-shadow: 0 5px 14px rgba(255, 100, 28, 0.18);
+  background: #faf7f3;
 }
 
 /* =========================================
@@ -192,9 +29,10 @@
    ========================================= */
 
 .contenido {
-  grid-area: contenido;
+  max-width: 1200px;
+  margin: 0 auto;
   min-width: 0;
-  padding: 36px;
+  padding: 36px 32px;
   background: #faf7f3;
 }
 
@@ -252,7 +90,7 @@
    BOTONES DEL CONTENIDO
    ========================================= */
 
-.contenido button:not(.btn-salir) {
+.contenido button {
   border-radius: 9px;
   border: 1px solid #ff641c;
   background: #ff641c;
@@ -264,7 +102,7 @@
   transition: background 0.2s, transform 0.2s;
 }
 
-.contenido button:not(.btn-salir):hover:not(:disabled) {
+.contenido button:hover:not(:disabled) {
   background: #e9520d;
   border-color: #e9520d;
   transform: translateY(-1px);
@@ -279,70 +117,7 @@
    RESPONSIVE
    ========================================= */
 
-@media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 205px minmax(0, 1fr);
-  }
-
-  .navbar {
-    padding: 0 20px;
-  }
-
-  .contenido {
-    padding: 28px 22px;
-  }
-
-  .nombre {
-    max-width: 200px;
-  }
-}
-
 @media (max-width: 768px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas:
-      "navbar"
-      "sidebar"
-      "contenido";
-  }
-
-  .navbar {
-    padding: 15px 16px;
-    flex-wrap: wrap;
-    gap: 14px;
-  }
-
-  .usuario {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .datos-usuario {
-    display: none;
-  }
-
-  .sidebar {
-    padding: 10px 12px;
-  }
-
-  .titulo-menu {
-    display: none;
-  }
-
-  .sidebar nav {
-    flex-direction: row;
-    gap: 8px;
-    overflow-x: auto;
-  }
-
-  .menu-item {
-    flex-shrink: 0;
-    white-space: nowrap;
-    padding: 11px 13px;
-    font-size: 13px;
-  }
-
   .contenido {
     padding: 25px 16px;
   }
@@ -353,30 +128,5 @@
 
   .tarjeta {
     padding: 20px;
-  }
-}
-
-@media (max-width: 420px) {
-  .marca h1 {
-    font-size: 18px;
-  }
-
-  .logo {
-    width: 39px;
-    height: 39px;
-    font-size: 23px;
-  }
-
-  .navbar {
-    align-items: flex-start;
-  }
-
-  .usuario {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .btn-salir {
-    padding: 9px 13px;
   }
 }

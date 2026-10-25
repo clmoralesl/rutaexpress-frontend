@@ -19,7 +19,6 @@ import {
 import { EmptyStateComponent } from '../../shared/feedback/empty-state.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { SkeletonComponent } from '../../shared/feedback/skeleton.component';
-import { ToastComponent } from '../../shared/feedback/toast.component';
 
 @Component({
   selector: 'app-catalogo',
@@ -30,8 +29,7 @@ import { ToastComponent } from '../../shared/feedback/toast.component';
     ReactiveFormsModule,
     RouterModule,
     SkeletonComponent,
-    EmptyStateComponent,
-    ToastComponent
+    EmptyStateComponent
   ],
   templateUrl: './catalogo.component.html',
   styleUrls: ['./catalogo.component.scss']

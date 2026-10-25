@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+/* ==========================================================================
+   Tokens de Diseno Globales - RutaExpress
+   Valores de la familia visual corporativa (issue #61)
+   ========================================================================== */
+
+:root {
+  --color-primario: #ff641c;
+  --color-primario-oscuro: #e05310;
+  --color-primario-suave: #fff0e5;
+  --color-texto: #0f172a;
+  --color-texto-secundario: #475569;
+  --color-texto-atenuado: #64748b;
+  --color-fondo: #f8fafc;
+  --color-superficie: #ffffff;
+  --color-borde: #e2e8f0;
+  --color-borde-fuerte: #cbd5e1;
+  --fuente-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --navbar-alto: 64px;
+  --z-navbar: 40;
+}
+
+html {
+  scroll-padding-top: var(--navbar-alto, 64px);
+}
+
