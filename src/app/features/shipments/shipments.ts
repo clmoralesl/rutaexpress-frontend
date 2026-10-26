@@ -14,7 +14,7 @@ import {
   FiltrosEnvios,
   Region
 } from '../../core/services/envios.service';
-import { AuthService } from '../../core/auth/auth.service';
+import { SesionService } from '../../core/auth/sesion.service';
 import { EtiquetaModalComponent } from './components/etiqueta-modal/etiqueta-modal.component';
 
 @Component({
@@ -79,7 +79,7 @@ export class Shipments implements OnInit {
 
   constructor(
     private enviosService: EnviosService,
-    private authService: AuthService,
+    private sesionService: SesionService,
     private fb: FormBuilder,
     private notifications: NotificationService
   ) {
@@ -157,8 +157,37 @@ export class Shipments implements OnInit {
     }
   }
 
+  puedeCrear(): boolean {
+    return this.sesionService.tieneRol('ADMIN', 'DESPACHADOR', 'CLIENTE');
+  }
+
   puedeGestionarEstados(): boolean {
-    return this.authService.tieneRol('ADMIN', 'DESPACHADOR');
+    return this.sesionService.tieneRol('ADMIN', 'DESPACHADOR');
+  }
+
+  puedeImprimirEtiqueta(): boolean {
+    return this.sesionService.tieneRol('ADMIN', 'DESPACHADOR', 'OPERADOR');
+  }
+
+  verSoloPropios(): boolean {
+    return (
+      this.sesionService.tieneRol('CLIENTE') &&
+      !this.sesionService.tieneRol('ADMIN', 'DESPACHADOR', 'OPERADOR')
+    );
+  }
+
+  tituloPagina(): string {
+    return this.verSoloPropios() ? 'Mis envíos' : 'Gestión de envíos';
+  }
+
+  tituloListado(): string {
+    return this.verSoloPropios() ? 'Mis envíos registrados' : 'Listado de envíos';
+  }
+
+  mensajeVacio(): string {
+    return this.verSoloPropios()
+      ? 'Aún no tienes envíos registrados.'
+      : 'No hay envíos con estos filtros.';
   }
 
   obtenerTransiciones(estadoActual: string): string[] {
@@ -180,11 +209,17 @@ export class Shipments implements OnInit {
         this.envios = envios;
         this.cargando = false;
       },
-      error: () => {
+      error: (err) => {
         this.envios = [];
-        this.notifications.error('No fue posible cargar los envíos.');
-        this.error = 'No fue posible cargar los envíos.';
         this.cargando = false;
+        if (err?.status === 403) {
+          this.error = 'No tienes permisos para consultar estos envíos.';
+        } else if (err?.status === 404) {
+          this.error = 'No se encontraron envíos para el criterio consultado.';
+        } else {
+          this.error = 'No fue posible cargar los envíos.';
+        }
+        this.notifications.error(this.error);
       }
     });
   }

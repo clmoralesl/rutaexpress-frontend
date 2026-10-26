@@ -1,7 +1,7 @@
 <main class="shipments-page">
 
   <div class="encabezado-pagina">
-    <h1>Gestión de envíos</h1>
+    <h1>{{ tituloPagina() }}</h1>
   </div>
 
   <!-- Alerta de éxito con código de seguimiento institucional generado -->
@@ -10,7 +10,7 @@
     <p>El sistema asignó de forma autónoma el código de seguimiento: <strong>{{ codigoCreadoReciente }}</strong></p>
   </div>
 
-  <section class="panel">
+  <section class="panel" *ngIf="puedeCrear()">
     <h2>Crear envío</h2>
 
     <form
@@ -257,7 +257,7 @@
   </section>
 
   <section class="panel">
-    <h2>Listado de envíos</h2>
+    <h2>{{ tituloListado() }}</h2>
 
     <div class="filtros">
 
@@ -311,9 +311,13 @@
 
     </div>
 
+    <div *ngIf="error" class="notificacion error">
+      <strong>Error:</strong> {{ error }}
+    </div>
+
     <app-skeleton *ngIf="cargando" [rows]="5"></app-skeleton>
 
-    <app-empty-state *ngIf="!cargando && !error && envios.length === 0" title="Sin envíos" message="Aún no tienes envíos registrados."></app-empty-state>
+    <app-empty-state *ngIf="!cargando && !error && envios.length === 0" title="Sin envíos" [message]="mensajeVacio()"></app-empty-state>
 
     <div
       *ngIf="!cargando && envios.length > 0"
@@ -329,7 +333,7 @@
             <th>Destino</th>
             <th>Estado</th>
             <th>Fecha creación</th>
-            <th>Etiqueta</th>
+            <th *ngIf="puedeImprimirEtiqueta()">Etiqueta</th>
 
             <th *ngIf="puedeGestionarEstados()">
               Acciones
@@ -357,7 +361,7 @@
               {{ envio.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
             </td>
 
-            <td>
+            <td *ngIf="puedeImprimirEtiqueta()">
               <button
                 type="button"
                 class="boton-etiqueta"

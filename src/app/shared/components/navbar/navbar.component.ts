@@ -28,7 +28,7 @@ export const ENLACES_NAVEGACION: readonly EnlaceNavegacion[] = [
   { etiqueta: 'Rastreo',   ruta: '/rastreo',   soloAutenticado: false },
   { etiqueta: 'Dashboard', ruta: '/dashboard', soloAutenticado: true },
   { etiqueta: 'Catálogo',  ruta: '/catalogo',  soloAutenticado: true },
-  { etiqueta: 'Envíos',    ruta: '/envios',    soloAutenticado: true, roles: ['ADMIN', 'DESPACHADOR', 'CLIENTE'] },
+  { etiqueta: 'Envíos',    ruta: '/envios',    soloAutenticado: true, roles: ['ADMIN', 'DESPACHADOR', 'CLIENTE', 'OPERADOR'] },
   { etiqueta: 'Auditoría', ruta: '/auditoria', soloAutenticado: true, roles: ['ADMIN', 'AUDITOR'] },
   { etiqueta: 'Reportes',  ruta: '/reportes',  soloAutenticado: true, roles: ['ADMIN', 'AUDITOR', 'OPERADOR'] }
 ];
