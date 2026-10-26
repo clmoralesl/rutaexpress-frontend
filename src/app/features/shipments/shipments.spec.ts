@@ -1,15 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import { By } from '@angular/platform-browser';
 import { Shipments } from './shipments';
 import { EnviosService, Envio, Region } from '../../core/services/envios.service';
-import { AuthService } from '../../core/auth/auth.service';
+import { SesionService } from '../../core/auth/sesion.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 
 describe('Shipments Component', () => {
   let component: Shipments;
   let fixture: ComponentFixture<Shipments>;
   let enviosServiceMock: jasmine.SpyObj<EnviosService>;
-  let authServiceMock: jasmine.SpyObj<AuthService>;
+  let sesionServiceMock: jasmine.SpyObj<SesionService>;
   let notificationServiceMock: jasmine.SpyObj<NotificationService>;
 
   const mockRegiones: Region[] = [
@@ -66,7 +67,7 @@ describe('Shipments Component', () => {
       'solicitarEtiqueta',
       'obtenerRegiones'
     ]);
-    authServiceMock = jasmine.createSpyObj('AuthService', ['tieneRol']);
+    sesionServiceMock = jasmine.createSpyObj('SesionService', ['tieneRol']);
     notificationServiceMock = jasmine.createSpyObj('NotificationService', [
       'info',
       'success',
@@ -77,13 +78,15 @@ describe('Shipments Component', () => {
     enviosServiceMock.listar.and.returnValue(of(listaEnviosMock));
     enviosServiceMock.solicitarEtiqueta.and.returnValue(of(undefined as unknown as void));
     enviosServiceMock.obtenerRegiones.and.returnValue(of(mockRegiones));
-    authServiceMock.tieneRol.and.returnValue(true);
+
+    // Por defecto asume rol ADMIN (acceso completo)
+    sesionServiceMock.tieneRol.and.callFake((...roles: string[]) => roles.includes('ADMIN'));
 
     await TestBed.configureTestingModule({
       imports: [Shipments],
       providers: [
         { provide: EnviosService, useValue: enviosServiceMock },
-        { provide: AuthService, useValue: authServiceMock },
+        { provide: SesionService, useValue: sesionServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock }
       ]
     }).compileComponents();
@@ -270,5 +273,117 @@ describe('Shipments Component', () => {
 
     expect(enviosServiceMock.actualizarEstado).toHaveBeenCalledWith(envio.id, 'ACEPTADO');
     expect(notificationServiceMock.success).toHaveBeenCalled();
+  });
+
+  describe('Control de acceso y vistas por rol (Issue #68)', () => {
+    it('debe configurar vista personal completa para rol ADMIN o DESPACHADOR', () => {
+      sesionServiceMock.tieneRol.and.callFake((...roles: string[]) => roles.includes('DESPACHADOR'));
+      fixture.detectChanges();
+
+      expect(component.puedeCrear()).toBeTrue();
+      expect(component.puedeGestionarEstados()).toBeTrue();
+      expect(component.puedeImprimirEtiqueta()).toBeTrue();
+      expect(component.verSoloPropios()).toBeFalse();
+
+      expect(component.tituloPagina()).toBe('Gestión de envíos');
+      expect(component.tituloListado()).toBe('Listado de envíos');
+      expect(component.mensajeVacio()).toBe('No hay envíos con estos filtros.');
+
+      const h1 = fixture.debugElement.query(By.css('.encabezado-pagina h1')).nativeElement.textContent.trim();
+      expect(h1).toBe('Gestión de envíos');
+
+      const formularioCreacion = fixture.debugElement.query(By.css('form.formulario-envio-completo'));
+      expect(formularioCreacion).toBeTruthy();
+
+      const encabezados = fixture.debugElement.queryAll(By.css('thead th')).map(th => th.nativeElement.textContent.trim());
+      expect(encabezados).toContain('Etiqueta');
+      expect(encabezados).toContain('Acciones');
+
+      const botonEtiqueta = fixture.debugElement.query(By.css('.boton-etiqueta'));
+      expect(botonEtiqueta).toBeTruthy();
+    });
+
+    it('debe configurar vista de cliente para rol CLIENTE (crear y ver solo propios, sin etiqueta ni acciones)', () => {
+      sesionServiceMock.tieneRol.and.callFake((...roles: string[]) => roles.includes('CLIENTE'));
+      fixture.detectChanges();
+
+      expect(component.puedeCrear()).toBeTrue();
+      expect(component.puedeGestionarEstados()).toBeFalse();
+      expect(component.puedeImprimirEtiqueta()).toBeFalse();
+      expect(component.verSoloPropios()).toBeTrue();
+
+      expect(component.tituloPagina()).toBe('Mis envíos');
+      expect(component.tituloListado()).toBe('Mis envíos registrados');
+      expect(component.mensajeVacio()).toBe('Aún no tienes envíos registrados.');
+
+      const h1 = fixture.debugElement.query(By.css('.encabezado-pagina h1')).nativeElement.textContent.trim();
+      expect(h1).toBe('Mis envíos');
+
+      const formularioCreacion = fixture.debugElement.query(By.css('form.formulario-envio-completo'));
+      expect(formularioCreacion).toBeTruthy();
+
+      const encabezados = fixture.debugElement.queryAll(By.css('thead th')).map(th => th.nativeElement.textContent.trim());
+      expect(encabezados).not.toContain('Etiqueta');
+      expect(encabezados).not.toContain('Acciones');
+
+      const botonEtiqueta = fixture.debugElement.query(By.css('.boton-etiqueta'));
+      expect(botonEtiqueta).toBeNull();
+    });
+
+    it('debe configurar vista de consulta para rol OPERADOR (ver todo y etiqueta, sin crear ni acciones)', () => {
+      sesionServiceMock.tieneRol.and.callFake((...roles: string[]) => roles.includes('OPERADOR'));
+      fixture.detectChanges();
+
+      expect(component.puedeCrear()).toBeFalse();
+      expect(component.puedeGestionarEstados()).toBeFalse();
+      expect(component.puedeImprimirEtiqueta()).toBeTrue();
+      expect(component.verSoloPropios()).toBeFalse();
+
+      expect(component.tituloPagina()).toBe('Gestión de envíos');
+      expect(component.tituloListado()).toBe('Listado de envíos');
+
+      const h1 = fixture.debugElement.query(By.css('.encabezado-pagina h1')).nativeElement.textContent.trim();
+      expect(h1).toBe('Gestión de envíos');
+
+      const formularioCreacion = fixture.debugElement.query(By.css('form.formulario-envio-completo'));
+      expect(formularioCreacion).toBeNull();
+
+      const encabezados = fixture.debugElement.queryAll(By.css('thead th')).map(th => th.nativeElement.textContent.trim());
+      expect(encabezados).toContain('Etiqueta');
+      expect(encabezados).not.toContain('Acciones');
+
+      const botonEtiqueta = fixture.debugElement.query(By.css('.boton-etiqueta'));
+      expect(botonEtiqueta).toBeTruthy();
+    });
+
+    it('debe mostrar mensaje descriptivo ante error 403 Forbidden al listar envios', () => {
+      enviosServiceMock.listar.and.returnValue(throwError(() => ({ status: 403 })));
+
+      component.cargarEnvios();
+      fixture.detectChanges();
+
+      expect(component.envios.length).toBe(0);
+      expect(component.error).toBe('No tienes permisos para consultar estos envíos.');
+      expect(notificationServiceMock.error).toHaveBeenCalledWith('No tienes permisos para consultar estos envíos.');
+
+      const alertaError = fixture.debugElement.query(By.css('.notificacion.error'));
+      expect(alertaError).toBeTruthy();
+      expect(alertaError.nativeElement.textContent).toContain('No tienes permisos para consultar estos envíos.');
+    });
+
+    it('debe mostrar mensaje descriptivo ante error 404 Not Found al listar envios', () => {
+      enviosServiceMock.listar.and.returnValue(throwError(() => ({ status: 404 })));
+
+      component.cargarEnvios();
+      fixture.detectChanges();
+
+      expect(component.envios.length).toBe(0);
+      expect(component.error).toBe('No se encontraron envíos para el criterio consultado.');
+      expect(notificationServiceMock.error).toHaveBeenCalledWith('No se encontraron envíos para el criterio consultado.');
+
+      const alertaError = fixture.debugElement.query(By.css('.notificacion.error'));
+      expect(alertaError).toBeTruthy();
+      expect(alertaError.nativeElement.textContent).toContain('No se encontraron envíos para el criterio consultado.');
+    });
   });
 });

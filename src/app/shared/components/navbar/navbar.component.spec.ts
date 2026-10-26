@@ -156,15 +156,15 @@ describe('NavbarComponent', () => {
       expect(etiquetas).not.toContain('Envíos');
     });
 
-    it('debe mostrar Reportes pero ocultar Auditoría y Envíos al OPERADOR', () => {
+    it('debe mostrar Reportes y Envíos pero ocultar Auditoría al OPERADOR', () => {
       mockAutenticado.set(true);
       mockRoles.set(['OPERADOR']);
       fixture.detectChanges();
 
       const etiquetas = component.enlacesVisibles().map((e) => e.etiqueta);
       expect(etiquetas).toContain('Reportes');
+      expect(etiquetas).toContain('Envíos');
       expect(etiquetas).not.toContain('Auditoría');
-      expect(etiquetas).not.toContain('Envíos');
     });
 
     it('debe mostrar únicamente Dashboard y Catálogo si el usuario autenticado no tiene roles asignados', () => {
