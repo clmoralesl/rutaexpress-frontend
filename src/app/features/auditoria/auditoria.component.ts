@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -28,6 +29,8 @@ import { SkeletonComponent } from '../../shared/feedback/skeleton.component';
   styleUrls: ['./auditoria.component.scss']
 })
 export class AuditoriaComponent implements OnInit {
+
+  private static readonly PATRON_CODIGO = /^[A-Za-z0-9-]{1,50}$/;
 
   // Modo de visualizacion: 'GLOBAL' para el flujo completo paginado, 'ENVIO' para trazabilidad forense
   readonly modoVista = signal<'GLOBAL' | 'ENVIO'>('GLOBAL');
@@ -188,7 +191,43 @@ export class AuditoriaComponent implements OnInit {
   }
 
   /**
-   * Ejecuta busqueda rapida de un envio por ID o codigo de seguimiento.
+   * Cambia a la inspeccion forense de un envio identificandolo por el par (envioId, codigoSeguimiento).
+   */
+  inspeccionarEnvioPorCodigo(envioId: number, codigoSeguimiento: string): void {
+    this.modoVista.set('ENVIO');
+    this.envioSeleccionadoId.set(envioId);
+    this.cargandoTimeline.set(true);
+    this.auditoriaService.obtenerTimelinePorEnvioYCodigo(envioId, codigoSeguimiento).subscribe({
+      next: timeline => {
+        this.timelineEnvio.set(timeline);
+        this.origenDatos.set(this.auditoriaService.origenDatos);
+        this.cargandoTimeline.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.timelineEnvio.set(null);
+        this.cargandoTimeline.set(false);
+        if (err.status === 404) {
+          this.notificationService.info(`No existe historial para el codigo ${codigoSeguimiento}.`);
+        } else {
+          this.notificationService.warning('No fue posible consultar el historial del envio.');
+        }
+      }
+    });
+  }
+
+  /**
+   * Permite ver la trazabilidad forense de un evento especifico usando el par si esta en Oracle.
+   */
+  verTrazabilidad(evento: EventoAuditoria): void {
+    if (this.origenDatos() === 'ORACLE_DB') {
+      this.inspeccionarEnvioPorCodigo(evento.envioId, evento.codigoSeguimiento);
+    } else {
+      this.inspeccionarEnvio(evento.envioId);
+    }
+  }
+
+  /**
+   * Ejecuta busqueda de un envio por ID o codigo de seguimiento consultando al servidor.
    */
   buscarEnvioPorInput(): void {
     const valor = this.busquedaEnvio().trim();
@@ -201,7 +240,35 @@ export class AuditoriaComponent implements OnInit {
       return;
     }
 
-    // Si es un codigo de seguimiento, buscar en los eventos cargados o contingencia
+    if (!AuditoriaComponent.PATRON_CODIGO.test(valor)) {
+      this.notificationService.info('El codigo de seguimiento solo admite letras, digitos y guiones (maximo 50).');
+      return;
+    }
+
+    this.auditoriaService.buscarEnvioIdPorCodigo(valor).subscribe({
+      next: envioId => {
+        if (envioId === null) {
+          this.notificationService.info(`No se encontro ningun envio con el codigo o ID: ${valor}`);
+          return;
+        }
+        this.inspeccionarEnvioPorCodigo(envioId, valor);
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 0 || err.status >= 500) {
+          this.buscarCodigoEnDatosLocales(valor);
+        } else if (err.status === 401 || err.status === 403) {
+          this.notificationService.warning('Su rol no permite buscar por codigo de seguimiento. Use el ID del envio.');
+        } else {
+          this.notificationService.info(`No se encontro ningun envio con el codigo o ID: ${valor}`);
+        }
+      }
+    });
+  }
+
+  /**
+   * Busqueda local previa (eventos cargados y contingencia), trasladada sin cambios de logica.
+   */
+  private buscarCodigoEnDatosLocales(valor: string): void {
     const eventoEncontrado = this.eventos().find(
       e => e.codigoSeguimiento.toLowerCase() === valor.toLowerCase()
     );
@@ -209,7 +276,6 @@ export class AuditoriaComponent implements OnInit {
     if (eventoEncontrado) {
       this.inspeccionarEnvio(eventoEncontrado.envioId);
     } else {
-      // Buscar en contingencia
       const contingencia = this.auditoriaService.obtenerEventosContingencia();
       const match = contingencia.find(
         e => e.codigoSeguimiento.toLowerCase() === valor.toLowerCase()
