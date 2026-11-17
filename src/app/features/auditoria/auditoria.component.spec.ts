@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -92,6 +92,8 @@ describe('AuditoriaComponent', () => {
     const audSpy = jasmine.createSpyObj('AuditoriaService', [
       'listarEventos',
       'obtenerTimelinePorEnvio',
+      'buscarEnvioIdPorCodigo',
+      'obtenerTimelinePorEnvioYCodigo',
       'obtenerEventosContingencia',
       'obtenerTimelineContingencia'
     ], {
@@ -100,6 +102,8 @@ describe('AuditoriaComponent', () => {
 
     audSpy.listarEventos.and.returnValue(of(mockPagina));
     audSpy.obtenerTimelinePorEnvio.and.returnValue(of(mockTimelineEnvio4));
+    audSpy.buscarEnvioIdPorCodigo.and.returnValue(of(4));
+    audSpy.obtenerTimelinePorEnvioYCodigo.and.returnValue(of(mockTimelineEnvio4));
     audSpy.obtenerEventosContingencia.and.returnValue(mockEventos);
     audSpy.obtenerTimelineContingencia.and.returnValue(mockTimelineEnvio4);
 
@@ -295,5 +299,97 @@ describe('AuditoriaComponent', () => {
     expect(component.origenDatos()).toBe('CONTINGENCIA');
     expect(component.timelineEnvio()).toBeTruthy();
     expect(component.cargandoTimeline()).toBeFalse();
+  });
+
+  it('C24: busca por codigo en el servidor y consulta el historial por par', () => {
+    auditoriaService.buscarEnvioIdPorCodigo.and.returnValue(of(4));
+    auditoriaService.obtenerTimelinePorEnvioYCodigo.and.returnValue(of(mockTimelineEnvio4));
+
+    component.busquedaEnvio.set('RTX-2026-000004');
+    component.buscarEnvioPorInput();
+
+    expect(auditoriaService.buscarEnvioIdPorCodigo).toHaveBeenCalledWith('RTX-2026-000004');
+    expect(auditoriaService.obtenerTimelinePorEnvioYCodigo).toHaveBeenCalledWith(4, 'RTX-2026-000004');
+    expect(component.timelineEnvio()).toEqual(mockTimelineEnvio4);
+    expect(component.modoVista()).toBe('ENVIO');
+  });
+
+  it('C25: codigo inexistente notifica sin contingencia', () => {
+    auditoriaService.buscarEnvioIdPorCodigo.and.returnValue(of(null));
+
+    component.busquedaEnvio.set('INEXISTENTE-123');
+    component.buscarEnvioPorInput();
+
+    expect(auditoriaService.buscarEnvioIdPorCodigo).toHaveBeenCalledWith('INEXISTENTE-123');
+    expect(notificationService.info).toHaveBeenCalledWith('No se encontro ningun envio con el codigo o ID: INEXISTENTE-123');
+    expect(component.timelineEnvio()).toBeNull();
+    expect(auditoriaService.obtenerEventosContingencia).not.toHaveBeenCalled();
+  });
+
+  it('C26: sin servidor usa la busqueda local existente', () => {
+    auditoriaService.buscarEnvioIdPorCodigo.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 0 }))
+    );
+
+    component.busquedaEnvio.set('RE-LIVE-001');
+    component.buscarEnvioPorInput();
+
+    expect(auditoriaService.obtenerTimelinePorEnvio).toHaveBeenCalledWith(4);
+  });
+
+  it('C26: servidor con error 500 usa la busqueda local existente', () => {
+    auditoriaService.buscarEnvioIdPorCodigo.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 500 }))
+    );
+
+    component.busquedaEnvio.set('RE-LIVE-001');
+    component.buscarEnvioPorInput();
+
+    expect(auditoriaService.obtenerTimelinePorEnvio).toHaveBeenCalledWith(4);
+  });
+
+  it('AJ5: servidor con error 403 notifica restriccion de rol para busqueda por codigo', () => {
+    auditoriaService.buscarEnvioIdPorCodigo.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 403 }))
+    );
+
+    component.busquedaEnvio.set('RTX-2026-000004');
+    component.buscarEnvioPorInput();
+
+    expect(notificationService.warning).toHaveBeenCalledWith(
+      'Su rol no permite buscar por codigo de seguimiento. Use el ID del envio.'
+    );
+  });
+
+  it('C27: entrada numerica inspecciona por id', () => {
+    component.busquedaEnvio.set('4');
+    component.buscarEnvioPorInput();
+
+    expect(auditoriaService.obtenerTimelinePorEnvio).toHaveBeenCalledWith(4);
+    expect(auditoriaService.buscarEnvioIdPorCodigo).not.toHaveBeenCalled();
+  });
+
+  it('C28: muestra el codigo de seguimiento en el encabezado del historial', () => {
+    component.timelineEnvio.set(mockTimelineEnvio4);
+    component.modoVista.set('ENVIO');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const codigoElem = compiled.querySelector('h2.codigo-envio-forense');
+    expect(codigoElem?.textContent?.trim()).toBe('RE-LIVE-001');
+  });
+
+  it('verTrazabilidad utiliza el par si origenDatos es ORACLE_DB', () => {
+    component.origenDatos.set('ORACLE_DB');
+    component.verTrazabilidad(mockEventos[0]);
+
+    expect(auditoriaService.obtenerTimelinePorEnvioYCodigo).toHaveBeenCalledWith(4, 'RE-LIVE-001');
+  });
+
+  it('verTrazabilidad utiliza camino simple por id si origenDatos es CONTINGENCIA', () => {
+    component.origenDatos.set('CONTINGENCIA');
+    component.verTrazabilidad(mockEventos[0]);
+
+    expect(auditoriaService.obtenerTimelinePorEnvio).toHaveBeenCalledWith(4);
   });
 });
