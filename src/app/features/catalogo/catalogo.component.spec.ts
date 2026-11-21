@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, RouterLink } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 import { CatalogoComponent } from './catalogo.component';
 import { CatalogoService, ServicioCatalogo } from '../../core/services/catalogo.service';
@@ -38,7 +39,7 @@ describe('CatalogoComponent', () => {
       tarifaBase: 2490,
       precioPorKg: 490,
       capacidadMaximaDiaria: 100,
-      capacidadDisponible: 15, // 15% -> critica (< 20%)
+      capacidadDisponible: 15,
       activo: true
     },
     {
@@ -50,7 +51,7 @@ describe('CatalogoComponent', () => {
       tarifaBase: 5490,
       precioPorKg: 1190,
       capacidadMaximaDiaria: 50,
-      capacidadDisponible: 18, // 36% -> advertencia (< 40%)
+      capacidadDisponible: 18,
       activo: true
     },
     {
@@ -72,30 +73,13 @@ describe('CatalogoComponent', () => {
       'listarServicios',
       'crearServicio',
       'actualizarServicio',
-      'calcularCotizacion',
       'obtenerServiciosContingencia'
     ]);
     catalogoSpy.obtenerServiciosContingencia.and.returnValue(mockServicios);
     catalogoSpy.listarServicios.and.returnValue(of(mockServicios));
-    catalogoSpy.calcularCotizacion.and.callFake((req: any, servicios: ServicioCatalogo[]) => {
-      const s = servicios.find(serv => serv.id === req.servicioId);
-      if (!s) return null;
-      const pesoFacturado = req.pesoKg;
-      const tarifaBase = s.tarifaBase;
-      const costoVariablePeso = pesoFacturado * s.precioPorKg;
-      return {
-        servicio: s,
-        pesoRealKg: req.pesoKg,
-        pesoVolumetricoKg: 0,
-        pesoFacturadoKg: pesoFacturado,
-        tarifaBase,
-        costoVariablePeso,
-        costoTotalEstimado: tarifaBase + costoVariablePeso
-      };
-    });
 
     const authSpy = jasmine.createSpyObj('AuthService', ['tieneRol', 'obtenerRolActivo']);
-    authSpy.tieneRol.and.returnValue(false); // Por defecto usuario normal sin ROLE_ADMIN
+    authSpy.tieneRol.and.returnValue(false);
 
     const notifSpy = jasmine.createSpyObj('NotificationService', ['success', 'error', 'info', 'warning', 'dismiss']);
     (notifSpy as any).messages = signal([]);
@@ -125,7 +109,6 @@ describe('CatalogoComponent', () => {
     expect(catalogoService.listarServicios).toHaveBeenCalled();
     expect(component.servicios().length).toBe(4);
     expect(component.cargando()).toBeFalse();
-    expect(component.cotizacionServicioId()).toBe(1);
   });
 
   describe('KPIs Calculados', () => {
@@ -134,19 +117,15 @@ describe('CatalogoComponent', () => {
     });
 
     it('debe calcular la capacidad total solo de servicios activos', () => {
-      // 100 + 100 + 50 = 250 (el inactivo tiene 20 y no se suma)
       expect(component.capacidadTotalRed()).toBe(250);
     });
 
     it('debe calcular los cupos disponibles y ocupados totales', () => {
-      // 85 + 15 + 18 = 118 cupos disponibles
       expect(component.cuposDisponiblesTotales()).toBe(118);
-      // 250 - 118 = 132 cupos ocupados
       expect(component.cuposOcupadosTotales()).toBe(132);
     });
 
     it('debe calcular el porcentaje de disponibilidad global', () => {
-      // (118 / 250) * 100 = 47.2%
       expect(component.porcentajeDisponibilidadGlobal()).toBe(47.2);
     });
   });
@@ -176,48 +155,38 @@ describe('CatalogoComponent', () => {
 
   describe('Indicador Visual de Capacidad Vehicular', () => {
     it('debe retornar porcentaje correcto de cupos disponibles', () => {
-      const servicio = mockServicios[0]; // 85 / 100 = 85%
+      const servicio = mockServicios[0];
       expect(component.calcularPorcentajeDisponible(servicio)).toBe(85);
     });
 
     it('debe alertar estado critico cuando la disponibilidad es menor al 20%', () => {
-      const servicioCritico = mockServicios[1]; // 15 / 100 = 15%
+      const servicioCritico = mockServicios[1];
       expect(component.obtenerNivelCapacidad(servicioCritico)).toBe('critica');
     });
 
     it('debe alertar estado de advertencia cuando la disponibilidad esta entre 20% y 39%', () => {
-      const servicioAdvertencia = mockServicios[2]; // 18 / 50 = 36%
+      const servicioAdvertencia = mockServicios[2];
       expect(component.obtenerNivelCapacidad(servicioAdvertencia)).toBe('advertencia');
     });
 
     it('debe mostrar estado normal cuando la disponibilidad es 40% o superior', () => {
-      const servicioNormal = mockServicios[0]; // 85%
+      const servicioNormal = mockServicios[0];
       expect(component.obtenerNivelCapacidad(servicioNormal)).toBe('normal');
     });
   });
 
-  describe('Tarifador y Calculadora en Tiempo Real', () => {
-    it('debe computar la cotizacion actual reactivamente al cambiar de peso', () => {
-      component.cotizacionServicioId.set(1);
-      component.cotizacionPeso.set(3.0);
-      const cotizacion = component.cotizacionActual();
-      expect(cotizacion).not.toBeNull();
-      expect(cotizacion!.costoTotalEstimado).toBe(8600);
-    });
+  describe('Enlaces y Redirecciones', () => {
+    it('enlaceCotizarLlevaServicioId', () => {
+      const enlacesCotizar = fixture.debugElement.queryAll(By.css('a.btn-cotizar'));
+      expect(enlacesCotizar.length).toBeGreaterThan(1);
 
-    it('debe permitir ajustar peso con incremento o decremento', () => {
-      component.cotizacionPeso.set(2.0);
-      component.ajustarPeso(1.0);
-      expect(component.cotizacionPeso()).toBe(3.0);
+      // Fila del servicio 2 (índice 1)
+      const enlaceServicio2 = enlacesCotizar[1];
+      const routerLinkDir = enlaceServicio2.injector.get(RouterLink);
+      expect(routerLinkDir.queryParams).toEqual({ servicioId: 2 });
 
-      component.ajustarPeso(-5.0);
-      expect(component.cotizacionPeso()).toBe(0.1); // Minimo permitido
-    });
-
-    it('debe seleccionar servicio para cotizar y emitir notificacion', () => {
-      component.seleccionarServicioParaCotizar(mockServicios[2]);
-      expect(component.cotizacionServicioId()).toBe(3);
-      expect(notificationService.info).toHaveBeenCalled();
+      const href = enlaceServicio2.nativeElement.getAttribute('href');
+      expect(href).toMatch(/\/cotizar\?servicioId=2$/);
     });
 
     it('debe formatear montos en pesos chilenos', () => {
@@ -327,7 +296,7 @@ describe('CatalogoComponent', () => {
       authService.tieneRol.and.returnValue(true);
       component.abrirModalCrear();
       component.servicioForm.patchValue({
-        codigo: '', // Requerido
+        codigo: '',
         nombre: ''
       });
 

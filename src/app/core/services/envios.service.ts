@@ -21,6 +21,32 @@ export interface DireccionRequest {
   idComuna: number;
 }
 
+export interface Medidas {
+  largoCm: number;
+  anchoCm: number;
+  altoCm: number;
+}
+
+export interface InstantaneaPrecio {
+  zona: string;
+  factorZona: number;
+  tarifaBase: number;
+  precioPorKg: number;
+  pesoFacturableKg: number;
+  totalClp: number;
+}
+
+export interface DetallePreregistro {
+  sucursalOrigenId: number | null;
+  servicioId: number | null;
+  medidasDeclaradas: Medidas | null;
+  precioEstimado: InstantaneaPrecio | null;
+  pesoVerificadoKg: number | null;
+  medidasVerificadas: Medidas | null;
+  precioFinal: InstantaneaPrecio | null;
+  fechaAceptacion: string | null;
+}
+
 export interface Envio {
   id: number;
   codigoSeguimiento: string;
@@ -35,6 +61,8 @@ export interface Envio {
   servicioNombre?: string;
   remitenteNombre?: string;
   destinatarioNombre?: string;
+  creadoPorEmail?: string | null;
+  preregistro?: DetallePreregistro | null;
 }
 
 export interface FiltrosEnvios {
@@ -46,12 +74,22 @@ export interface FiltrosEnvios {
 export interface CrearEnvioRequest {
   rutRemitente: string;
   rutDestinatario: string;
+  sucursalOrigenId: number;
+  servicioId: number;
+  destino: DireccionRequest;
   pesoKg: number;
-  origen?: DireccionRequest;
-  destino?: DireccionRequest;
-  codigoSeguimiento?: string;
-  direccionOrigen?: string;
-  direccionDestino?: string;
+  largoCm?: number;
+  anchoCm?: number;
+  altoCm?: number;
+  remitenteEmail?: string;
+}
+
+export interface AceptarEnvioRequest {
+  pesoVerificadoKg: number;
+  largoCm?: number;
+  anchoCm?: number;
+  altoCm?: number;
+  observacion?: string;
 }
 
 export interface ActualizarEstadoRequest {
@@ -62,10 +100,9 @@ export interface ActualizarEstadoRequest {
   providedIn: 'root'
 })
 export class EnviosService {
-
   private readonly apiUrl = `${environment.apiUrl}/api/bff/envios`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   obtenerRegiones(): Observable<Region[]> {
     return this.http.get<Region[]>(`${this.apiUrl}/geografia/regiones`);
@@ -91,6 +128,10 @@ export class EnviosService {
 
   crear(request: CrearEnvioRequest): Observable<Envio> {
     return this.http.post<Envio>(this.apiUrl, request);
+  }
+
+  aceptar(id: number, request: AceptarEnvioRequest): Observable<Envio> {
+    return this.http.post<Envio>(`${this.apiUrl}/${id}/aceptacion`, request);
   }
 
   actualizarEstado(id: number, estado: string): Observable<Envio> {

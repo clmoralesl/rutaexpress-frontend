@@ -4,30 +4,33 @@
     <h1>{{ tituloPagina() }}</h1>
   </div>
 
-  <!-- Alerta de éxito con código de seguimiento institucional generado -->
-  <div *ngIf="codigoCreadoReciente" class="notificacion exito">
-    <strong>¡Envío creado exitosamente!</strong>
-    <p>El sistema asignó de forma autónoma el código de seguimiento: <strong>{{ codigoCreadoReciente }}</strong></p>
+  <!-- Alerta de éxito con resumen de pre-registro generado -->
+  <div *ngIf="resumenPreregistroReciente" class="notificacion exito">
+    <strong>¡Envío pre-registrado exitosamente!</strong>
+    <p>
+      Código institucional: <strong>{{ resumenPreregistroReciente.codigo }}</strong> |
+      Sucursal: <strong>{{ resumenPreregistroReciente.sucursal }}</strong> |
+      Precio estimado: <strong>{{ resumenPreregistroReciente.precioEstimado }}</strong>
+    </p>
   </div>
 
   <section class="panel" *ngIf="puedeCrear()">
-    <h2>Crear envío</h2>
+    <h2>Crear pre-registro de envío</h2>
 
     <form
       [formGroup]="formularioEnvio"
       (ngSubmit)="crearEnvio()"
       class="formulario-envio-completo">
 
-      <!-- Informacion de Codigo Automatico -->
       <div class="alerta-codigo-automatico">
-        <span class="etiqueta-info">Asignación Automática:</span>
-        El código de seguimiento institucional (formato <code>RTX-YYYY-XXXXXX</code>) se genera de forma autónoma al registrar el envío.
+        <span class="etiqueta-info">Pre-registro con confirmación en sucursal:</span>
+        El código institucional se genera de forma autónoma. El valor final se confirmará al pesar y medir el paquete en la sucursal de origen.
       </div>
 
-      <!-- Datos Principales del Envio -->
+      <!-- Datos Principales y Operacionales -->
       <div class="form-grid datos-generales">
         <div class="campo">
-          <label for="rutRemitente">RUT remitente</label>
+          <label for="rutRemitente">RUT remitente *</label>
           <input
             id="rutRemitente"
             type="text"
@@ -36,15 +39,15 @@
 
           <small
             *ngIf="
-              formularioEnvio.controls.rutRemitente.touched &&
-              formularioEnvio.controls.rutRemitente.invalid
+              formularioEnvio.get('rutRemitente')?.touched &&
+              formularioEnvio.get('rutRemitente')?.invalid
             ">
             El RUT del remitente es obligatorio.
           </small>
         </div>
 
         <div class="campo">
-          <label for="rutDestinatario">RUT destinatario</label>
+          <label for="rutDestinatario">RUT destinatario *</label>
           <input
             id="rutDestinatario"
             type="text"
@@ -53,123 +56,175 @@
 
           <small
             *ngIf="
-              formularioEnvio.controls.rutDestinatario.touched &&
-              formularioEnvio.controls.rutDestinatario.invalid
+              formularioEnvio.get('rutDestinatario')?.touched &&
+              formularioEnvio.get('rutDestinatario')?.invalid
             ">
             El RUT del destinatario es obligatorio.
           </small>
         </div>
 
-        <div class="campo">
-          <label for="pesoKg">Peso (kg)</label>
+        <!-- Remitente Email (Solo personal administrativo/despachador) -->
+        <div class="campo" *ngIf="esPersonal()">
+          <label for="pre-remitente-email">Correo electrónico del remitente *</label>
           <input
-            id="pesoKg"
-            type="number"
-            min="0.01"
-            step="0.01"
-            placeholder="0.00"
-            formControlName="pesoKg">
+            id="pre-remitente-email"
+            type="email"
+            placeholder="cliente@correo.cl"
+            formControlName="remitenteEmail">
 
           <small
             *ngIf="
-              formularioEnvio.controls.pesoKg.touched &&
-              formularioEnvio.controls.pesoKg.invalid
+              formularioEnvio.get('remitenteEmail')?.touched &&
+              formularioEnvio.get('remitenteEmail')?.invalid
             ">
-            El peso debe ser mayor que 0.
+            El correo del remitente es obligatorio para el personal y debe ser válido.
           </small>
         </div>
       </div>
 
-      <!-- Secciones de Direcciones Estructuradas -->
-      <div class="direcciones-grid">
+      <!-- Sucursal y Servicio -->
+      <div class="form-grid datos-logistica">
+        <div class="campo">
+          <label for="pre-sucursal">Sucursal de origen para entrega del paquete *</label>
+          <select id="pre-sucursal" formControlName="sucursalOrigenId">
+            <option [value]="0">Seleccione sucursal de recepción</option>
+            <option *ngFor="let suc of sucursales" [value]="suc.id">
+              {{ suc.nombre }} ({{ suc.calle }} {{ suc.numero }})
+            </option>
+          </select>
+          <small
+            *ngIf="
+              formularioEnvio.get('sucursalOrigenId')?.touched &&
+              formularioEnvio.get('sucursalOrigenId')?.invalid
+            ">
+            Debe seleccionar una sucursal de origen.
+          </small>
+        </div>
 
-        <!-- Direccion de Origen -->
-        <fieldset formGroupName="origen" class="grupo-direccion">
-          <legend>Dirección de Origen</legend>
+        <div class="campo">
+          <label for="pre-servicio">Servicio logístico de transporte *</label>
+          <select id="pre-servicio" formControlName="servicioId">
+            <option [value]="0">Seleccione servicio de envío</option>
+            <option *ngFor="let srv of servicios" [value]="srv.id">
+              {{ describirServicio(srv) }}
+            </option>
+          </select>
+          <small
+            *ngIf="
+              formularioEnvio.get('servicioId')?.touched &&
+              formularioEnvio.get('servicioId')?.invalid
+            ">
+            Debe seleccionar un servicio logístico.
+          </small>
+        </div>
+      </div>
 
-          <div class="form-grid-direccion">
+      <!-- Peso y Dimensiones con Ayuda Plegable -->
+      <div class="bloque-dimensiones-preregistro">
+        <div class="campo">
+          <label for="pre-peso">Peso estimado del paquete (kg) *</label>
+          <input
+            id="pre-peso"
+            type="number"
+            min="0.01"
+            max="500"
+            step="0.01"
+            placeholder="0.00"
+            aria-describedby="pre-peso-resumen pre-peso-ayuda"
+            formControlName="pesoKg">
+
+          <span id="pre-peso-resumen" class="texto-resumen-pre">
+            Peso estimado para cálculo inicial (máximo 500 kg).
+          </span>
+
+          <app-ayuda-plegable idAyuda="pre-peso-ayuda" titulo="¿Cómo influyen las medidas en la tarifa?">
+            <p>
+              El valor final se calcula en base al <strong>peso facturable</strong> (el mayor entre peso real y volumétrico). Si indicas dimensiones, deben ingresarse las 3 (largo, ancho y alto). De lo contrario, déjalas en blanco y se verificarán en la sucursal.
+            </p>
+          </app-ayuda-plegable>
+
+          <small
+            *ngIf="
+              formularioEnvio.get('pesoKg')?.touched &&
+              formularioEnvio.get('pesoKg')?.invalid
+            ">
+            El peso debe ser mayor que 0 y menor o igual a 500 kg.
+          </small>
+        </div>
+
+        <fieldset formGroupName="medidas" class="grupo-medidas-pre">
+          <legend>Medidas declaradas (opcional: las tres o ninguna)</legend>
+          <span id="pre-medidas-resumen" class="texto-ayuda-campo">
+            Mide la caja cerrada, en centímetros enteros. Se verificarán en la sucursal.
+          </span>
+          <app-ayuda-plegable
+            idAyuda="pre-medidas-ayuda"
+            titulo="¿Cómo medir el paquete?"
+            resumen="Aprende a medir correctamente las dimensiones de tu encomienda">
+            <p>Para calcular el peso volumétrico, mide los extremos máximos de la caja cerrada:</p>
+            <ul>
+              <li><strong>Largo:</strong> el lado más extenso de la base.</li>
+              <li><strong>Ancho:</strong> el lado menor de la base.</li>
+              <li><strong>Alto:</strong> la distancia vertical desde la base hasta la parte superior.</li>
+            </ul>
+            <p>Usa siempre números enteros en centímetros (redondea hacia arriba si tienes dudas).</p>
+          </app-ayuda-plegable>
+
+          <div class="form-grid-medidas">
             <div class="campo">
-              <label for="origenRegion">Región</label>
-              <select
-                id="origenRegion"
-                formControlName="idRegion"
-                (change)="onRegionOrigenChange($event)">
-                <option [value]="0">Seleccione una región</option>
-                <option *ngFor="let reg of regiones" [value]="reg.idRegion">
-                  {{ reg.nombre }}
-                </option>
-              </select>
-              <small *ngIf="formularioEnvio.controls.origen.controls.idRegion.touched && formularioEnvio.controls.origen.controls.idRegion.value === 0">
-                Debe seleccionar una región de origen.
-              </small>
+              <label for="pre-largo">Largo (cm)</label>
+              <input
+                id="pre-largo"
+                type="number"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                formControlName="largoCm"
+                [attr.aria-describedby]="formularioEnvio.get('medidas')?.hasError('medidasIncompletas') ? 'pre-medidas-resumen pre-medidas-ayuda pre-medidas-error' : 'pre-medidas-resumen pre-medidas-ayuda'">
             </div>
-
             <div class="campo">
-              <label for="origenComuna">Comuna</label>
-              <select
-                id="origenComuna"
-                formControlName="idComuna">
-                <option [value]="0">Seleccione una comuna</option>
-                <option *ngFor="let com of comunasOrigen" [value]="com.idComuna">
-                  {{ com.nombre }}
-                </option>
-              </select>
-              <small *ngIf="formularioEnvio.controls.origen.controls.idComuna.touched && formularioEnvio.controls.origen.controls.idComuna.value === 0">
-                Debe seleccionar una comuna de origen.
-              </small>
-            </div>
-
-            <div class="campo campo-calle">
-              <label for="origenCalle">Calle / Avenida</label>
+              <label for="pre-ancho">Ancho (cm)</label>
               <input
-                id="origenCalle"
-                type="text"
-                placeholder="Nombre de la calle"
-                formControlName="calle">
-              <small *ngIf="formularioEnvio.controls.origen.controls.calle.touched && formularioEnvio.controls.origen.controls.calle.invalid">
-                La calle es obligatoria.
-              </small>
+                id="pre-ancho"
+                type="number"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                formControlName="anchoCm"
+                [attr.aria-describedby]="formularioEnvio.get('medidas')?.hasError('medidasIncompletas') ? 'pre-medidas-resumen pre-medidas-ayuda pre-medidas-error' : 'pre-medidas-resumen pre-medidas-ayuda'">
             </div>
-
-            <div class="campo campo-numero">
-              <div class="numero-header">
-                <label for="origenNumero">Número</label>
-                <label class="sn-checkbox-label">
-                  <input
-                    type="checkbox"
-                    (change)="toggleSinNumeroOrigen($event)"
-                    [checked]="formularioEnvio.controls.origen.controls.numero.value === 'S/N'">
-                  S/N
-                </label>
-              </div>
+            <div class="campo">
+              <label for="pre-alto">Alto (cm)</label>
               <input
-                id="origenNumero"
-                type="text"
-                placeholder="Ej: 1234 o S/N"
-                formControlName="numero">
-              <small *ngIf="formularioEnvio.controls.origen.controls.numero.touched && formularioEnvio.controls.origen.controls.numero.invalid">
-                El número o S/N es obligatorio.
-              </small>
-            </div>
-
-            <div class="campo campo-complemento">
-              <label for="origenComplemento">Complemento (Opcional)</label>
-              <input
-                id="origenComplemento"
-                type="text"
-                placeholder="Ej: Depto 402, Bodega B"
-                formControlName="complemento">
+                id="pre-alto"
+                type="number"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                formControlName="altoCm"
+                [attr.aria-describedby]="formularioEnvio.get('medidas')?.hasError('medidasIncompletas') ? 'pre-medidas-resumen pre-medidas-ayuda pre-medidas-error' : 'pre-medidas-resumen pre-medidas-ayuda'">
             </div>
           </div>
+          <small
+            *ngIf="formularioEnvio.get('medidas')?.hasError('medidasIncompletas')"
+            id="pre-medidas-error"
+            class="error-medidas">
+            Debes completar largo, ancho y alto juntos, o dejarlos todos en blanco.
+          </small>
         </fieldset>
+      </div>
 
-        <!-- Direccion de Destino -->
+      <!-- Secciones de Dirección de Destino -->
+      <div class="direcciones-grid">
         <fieldset formGroupName="destino" class="grupo-direccion">
-          <legend>Dirección de Destino</legend>
+          <legend>Dirección de Destino del Envío</legend>
 
           <div class="form-grid-direccion">
             <div class="campo">
-              <label for="destinoRegion">Región</label>
+              <label for="destinoRegion">Región *</label>
               <select
                 id="destinoRegion"
                 formControlName="idRegion"
@@ -179,13 +234,13 @@
                   {{ reg.nombre }}
                 </option>
               </select>
-              <small *ngIf="formularioEnvio.controls.destino.controls.idRegion.touched && formularioEnvio.controls.destino.controls.idRegion.value === 0">
+              <small *ngIf="formularioEnvio.get('destino.idRegion')?.touched && formularioEnvio.get('destino.idRegion')?.value === 0">
                 Debe seleccionar una región de destino.
               </small>
             </div>
 
             <div class="campo">
-              <label for="destinoComuna">Comuna</label>
+              <label for="destinoComuna">Comuna *</label>
               <select
                 id="destinoComuna"
                 formControlName="idComuna">
@@ -194,32 +249,32 @@
                   {{ com.nombre }}
                 </option>
               </select>
-              <small *ngIf="formularioEnvio.controls.destino.controls.idComuna.touched && formularioEnvio.controls.destino.controls.idComuna.value === 0">
+              <small *ngIf="formularioEnvio.get('destino.idComuna')?.touched && formularioEnvio.get('destino.idComuna')?.value === 0">
                 Debe seleccionar una comuna de destino.
               </small>
             </div>
 
             <div class="campo campo-calle">
-              <label for="destinoCalle">Calle / Avenida</label>
+              <label for="destinoCalle">Calle / Avenida *</label>
               <input
                 id="destinoCalle"
                 type="text"
                 placeholder="Nombre de la calle"
                 formControlName="calle">
-              <small *ngIf="formularioEnvio.controls.destino.controls.calle.touched && formularioEnvio.controls.destino.controls.calle.invalid">
+              <small *ngIf="formularioEnvio.get('destino.calle')?.touched && formularioEnvio.get('destino.calle')?.invalid">
                 La calle es obligatoria.
               </small>
             </div>
 
             <div class="campo campo-numero">
               <div class="numero-header">
-                <label for="destinoNumero">Número</label>
+                <label for="destinoNumero">Número *</label>
                 <label class="sn-checkbox-label">
                   <input
                     type="checkbox"
                     (change)="toggleSinNumeroDestino($event)"
-                    [checked]="formularioEnvio.controls.destino.controls.numero.value === 'S/N'">
-                  S/N
+                    [checked]="formularioEnvio.get('destino.numero')?.value === 'S/N'">
+                    S/N
                 </label>
               </div>
               <input
@@ -227,7 +282,7 @@
                 type="text"
                 placeholder="Ej: 5678 o S/N"
                 formControlName="numero">
-              <small *ngIf="formularioEnvio.controls.destino.controls.numero.touched && formularioEnvio.controls.destino.controls.numero.invalid">
+              <small *ngIf="formularioEnvio.get('destino.numero')?.touched && formularioEnvio.get('destino.numero')?.invalid">
                 El número o S/N es obligatorio.
               </small>
             </div>
@@ -242,14 +297,13 @@
             </div>
           </div>
         </fieldset>
-
       </div>
 
       <div class="acciones-formulario">
         <button
           type="submit"
-          [disabled]="creandoEnvio">
-          {{ creandoEnvio ? 'Registrando envío...' : 'Crear envío' }}
+          [disabled]="creandoEnvio || catalogosNoDisponibles">
+          {{ creandoEnvio ? 'Registrando pre-registro...' : 'Crear pre-registro de envío' }}
         </button>
       </div>
 
@@ -260,21 +314,17 @@
     <h2>{{ tituloListado() }}</h2>
 
     <div class="filtros">
-
       <div class="campo">
         <label for="estado">Estado</label>
         <select
           id="estado"
           [(ngModel)]="estado">
-
           <option value="">Todos</option>
-
           <option
             *ngFor="let opcion of estados"
             [value]="opcion">
             {{ opcion }}
           </option>
-
         </select>
       </div>
 
@@ -308,7 +358,6 @@
           Limpiar
         </button>
       </div>
-
     </div>
 
     <div *ngIf="error" class="notificacion error">
@@ -324,39 +373,32 @@
       class="tabla-contenedor">
 
       <table>
-
         <thead>
           <tr>
             <th>ID</th>
             <th>Código</th>
             <th>Origen</th>
             <th>Destino</th>
+            <th>Precio</th>
             <th>Estado</th>
             <th>Fecha creación</th>
             <th *ngIf="puedeImprimirEtiqueta()">Etiqueta</th>
-
-            <th *ngIf="puedeGestionarEstados()">
-              Acciones
-            </th>
+            <th *ngIf="puedeGestionarEstados()">Acciones</th>
           </tr>
         </thead>
 
         <tbody>
-
           <tr *ngFor="let envio of envios">
-
             <td>{{ envio.id }}</td>
-
             <td>{{ envio.codigoSeguimiento }}</td>
-
             <td>{{ envio.direccionOrigen }}</td>
-
             <td>{{ envio.direccionDestino }}</td>
-
+            <td>
+              <strong>{{ mostrarPrecioEnvio(envio) }}</strong>
+            </td>
             <td>
               <strong>{{ envio.estado }}</strong>
             </td>
-
             <td>
               {{ envio.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
             </td>
@@ -372,36 +414,41 @@
             </td>
 
             <td *ngIf="puedeGestionarEstados()">
+              <div class="acciones-estado">
+                <!-- Botón de Aceptación para personal en sucursal -->
+                <button
+                  type="button"
+                  *ngIf="envio.estado === 'CREADO' && envio.preregistro?.servicioId"
+                  class="boton-aceptar-sucursal"
+                  (click)="abrirAceptacion(envio)">
+                  Aceptar en sucursal
+                </button>
 
-              <div
-                class="acciones-estado"
-                *ngIf="obtenerTransiciones(envio.estado).length > 0">
+                <span
+                  *ngIf="envio.estado === 'CREADO' && !envio.preregistro?.servicioId"
+                  class="aviso-sin-servicio">
+                  Envío anterior al pre-registro: solo admite cancelación
+                </span>
 
+                <!-- Transiciones de estado permitidas (ej: CANCELAR) -->
                 <button
                   type="button"
                   *ngFor="let nuevoEstado of obtenerTransiciones(envio.estado)"
                   (click)="actualizarEstado(envio, nuevoEstado)">
                   {{ nuevoEstado }}
                 </button>
-
               </div>
 
               <span
-                *ngIf="obtenerTransiciones(envio.estado).length === 0"
+                *ngIf="obtenerTransiciones(envio.estado).length === 0 && envio.estado !== 'CREADO'"
                 class="sin-acciones">
                 Sin acciones
               </span>
-
             </td>
-
           </tr>
-
         </tbody>
-
       </table>
-
     </div>
-
   </section>
 
 </main>
@@ -421,3 +468,10 @@
   (cerrar)="cerrarEtiqueta()"
   (reintentarEncolado)="reintentarEncolado($event)">
 </app-etiqueta-modal>
+
+<app-aceptacion-modal
+  *ngIf="aceptacionModalVisible && envioSeleccionadoAceptacion"
+  [envio]="envioSeleccionadoAceptacion"
+  (aceptado)="alAceptarEnvio()"
+  (cerrar)="cerrarAceptacion()">
+</app-aceptacion-modal>

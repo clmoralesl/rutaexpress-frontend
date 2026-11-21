@@ -1,12 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import {
   CatalogoService,
+  ServicioCatalogo,
   CrearServicioDto,
-  ActualizarServicioDto,
-  CotizacionRequest,
-  ServicioCatalogo
+  ActualizarServicioDto
 } from './catalogo.service';
 import { environment } from '../../../environments/environment';
 
@@ -20,37 +18,37 @@ describe('CatalogoService', () => {
       id: 1,
       codigo: 'EXPRESS-24H',
       nombre: 'Envio Express 24 Horas',
-      descripcion: 'Entrega garantizada en menos de 24 horas',
+      descripcion: 'Entrega en 24 horas habiles.',
       tipoVehiculo: 'FURGON',
       tarifaBase: 5000,
       precioPorKg: 1200,
       capacidadMaximaDiaria: 100,
-      capacidadDisponible: 85,
-      activo: true
+      capacidadDisponible: 95,
+      activo: true,
+      fechaCreacion: '2026-10-19T04:41:50',
+      fechaActualizacion: '2026-10-19T04:41:54'
     },
     {
       id: 2,
       codigo: 'ESTANDAR',
       nombre: 'Envio Estandar 48-72 Horas',
-      descripcion: 'Distribucion economica',
+      descripcion: 'Distribucion economica.',
       tipoVehiculo: 'FURGON',
       tarifaBase: 2490,
       precioPorKg: 490,
       capacidadMaximaDiaria: 120,
-      capacidadDisponible: 10,
-      activo: true
+      capacidadDisponible: 120,
+      activo: true,
+      fechaCreacion: '2026-10-20T01:41:02',
+      fechaActualizacion: '2026-10-20T01:41:02'
     }
   ];
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        CatalogoService
-      ]
+      imports: [HttpClientTestingModule],
+      providers: [CatalogoService]
     });
-
     service = TestBed.inject(CatalogoService);
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -59,20 +57,15 @@ describe('CatalogoService', () => {
     httpMock.verify();
   });
 
-  it('debe crearse correctamente el servicio', () => {
+  it('debe crearse correctamente', () => {
     expect(service).toBeTruthy();
   });
 
-  it('debe retornar lista de contingencia con los 4 servicios por defecto', () => {
-    const contingencia = service.obtenerServiciosContingencia();
-    expect(contingencia.length).toBe(4);
-    expect(contingencia[0].codigo).toBe('EXPRESS-24H');
-  });
-
-  it('debe listar servicios exitosamente desde la API', () => {
+  it('debe retornar lista de servicios del backend por peticion HTTP GET', () => {
     service.listarServicios().subscribe(servicios => {
       expect(servicios.length).toBe(2);
       expect(servicios[0].codigo).toBe('EXPRESS-24H');
+      expect(servicios[1].codigo).toBe('ESTANDAR');
     });
 
     const req = httpMock.expectOne(apiUrl);
@@ -80,63 +73,73 @@ describe('CatalogoService', () => {
     req.flush(mockServicios);
   });
 
-  it('debe responder con catalogo de contingencia si la API falla', () => {
+  it('debe responder con catalogo de contingencia si el servidor falla (resiliencia offline)', () => {
     service.listarServicios().subscribe(servicios => {
+      expect(servicios).toBeDefined();
       expect(servicios.length).toBeGreaterThan(0);
-      expect(servicios[0].codigo).toBe('EXPRESS-24H');
+      expect(servicios.some(s => s.codigo === 'EXPRESS-24H')).toBeTrue();
     });
 
     const req = httpMock.expectOne(apiUrl);
-    req.flush('Error de conexion', { status: 500, statusText: 'Internal Server Error' });
+    expect(req.request.method).toBe('GET');
+    req.flush('Error de conexion con BFF', { status: 503, statusText: 'Service Unavailable' });
   });
 
-  it('debe crear un nuevo servicio via POST', () => {
-    const nuevoDto: CrearServicioDto = {
-      codigo: 'SAME-DAY',
-      nombre: 'Entrega Mismo Dia',
+  it('debe obtener un servicio especifico por su identificador', () => {
+    service.obtenerPorId(1).subscribe(servicio => {
+      expect(servicio).toBeDefined();
+      expect(servicio?.id).toBe(1);
+      expect(servicio?.nombre).toBe('Envio Express 24 Horas');
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/1`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockServicios[0]);
+  });
+
+  it('debe registrar un nuevo servicio enviando peticion POST', () => {
+    const nuevoServicio: CrearServicioDto = {
+      codigo: 'MISMO_DIA',
+      nombre: 'Envio Mismo Dia',
       descripcion: 'Despacho urgente',
       tipoVehiculo: 'MOTO',
-      tarifaBase: 6000,
-      precioPorKg: 1500,
-      capacidadMaximaDiaria: 40
+      tarifaBase: 5490,
+      precioPorKg: 1190,
+      capacidadMaximaDiaria: 30
     };
 
-    const respuestaServicio: ServicioCatalogo = {
-      id: 5,
-      codigo: nuevoDto.codigo,
-      nombre: nuevoDto.nombre,
-      descripcion: nuevoDto.descripcion ?? '',
-      tipoVehiculo: nuevoDto.tipoVehiculo,
-      tarifaBase: nuevoDto.tarifaBase,
-      precioPorKg: nuevoDto.precioPorKg,
-      capacidadMaximaDiaria: nuevoDto.capacidadMaximaDiaria,
-      capacidadDisponible: 40,
-      activo: true
+    const respuestaServidor: ServicioCatalogo = {
+      id: 3,
+      ...nuevoServicio,
+      descripcion: nuevoServicio.descripcion || '',
+      capacidadDisponible: 30,
+      activo: true,
+      fechaCreacion: '2026-10-23T10:00:00',
+      fechaActualizacion: '2026-10-23T10:00:00'
     };
 
-    service.crearServicio(nuevoDto).subscribe(resultado => {
-      expect(resultado.id).toBe(5);
-      expect(resultado.codigo).toBe('SAME-DAY');
+    service.crearServicio(nuevoServicio).subscribe(resultado => {
+      expect(resultado.id).toBe(3);
+      expect(resultado.codigo).toBe('MISMO_DIA');
+      expect(resultado.activo).toBeTrue();
     });
 
     const req = httpMock.expectOne(apiUrl);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(nuevoDto);
-    req.flush(respuestaServicio);
+    expect(req.request.body).toEqual(nuevoServicio);
+    req.flush(respuestaServidor);
   });
 
-  it('debe actualizar un servicio existente via PUT', () => {
+  it('debe actualizar tarifas y capacidad de un servicio mediante PUT', () => {
     const actualizacion: ActualizarServicioDto = {
       nombre: 'Envio Express Actualizado',
-      tarifaBase: 5500,
-      precioPorKg: 1300,
-      capacidadMaximaDiaria: 120,
-      activo: true
+      tarifaBase: 5500
     };
 
     const respuestaActualizada: ServicioCatalogo = {
       ...mockServicios[0],
-      ...actualizacion
+      nombre: 'Envio Express Actualizado',
+      tarifaBase: 5500
     };
 
     service.actualizarServicio(1, actualizacion).subscribe(resultado => {
@@ -147,54 +150,5 @@ describe('CatalogoService', () => {
     const req = httpMock.expectOne(`${apiUrl}/1`);
     expect(req.request.method).toBe('PUT');
     req.flush(respuestaActualizada);
-  });
-
-  describe('Motor de Tarifacion y Cotizaciones', () => {
-    it('debe calcular cotizacion basada en peso real cuando no hay dimensiones', () => {
-      const peticion: CotizacionRequest = {
-        servicioId: 1,
-        pesoKg: 3.0
-      };
-
-      const resultado = service.calcularCotizacion(peticion, mockServicios);
-      expect(resultado).not.toBeNull();
-      // tarifaBase (5000) + pesoFacturado (3.0 * 1200 = 3600) = 8600
-      expect(resultado!.pesoRealKg).toBe(3.0);
-      expect(resultado!.pesoVolumetricoKg).toBe(0);
-      expect(resultado!.pesoFacturadoKg).toBe(3.0);
-      expect(resultado!.tarifaBase).toBe(5000);
-      expect(resultado!.costoVariablePeso).toBe(3600);
-      expect(resultado!.costoTotalEstimado).toBe(8600);
-    });
-
-    it('debe calcular peso volumetrico (L x A x H / 5000) y usar el mayor entre real y volumetrico', () => {
-      // 50 x 40 x 30 = 60000 / 5000 = 12 kg volumetrico vs 2.5 kg real
-      const peticion: CotizacionRequest = {
-        servicioId: 1,
-        pesoKg: 2.5,
-        largoCm: 50,
-        anchoCm: 40,
-        altoCm: 30
-      };
-
-      const resultado = service.calcularCotizacion(peticion, mockServicios);
-      expect(resultado).not.toBeNull();
-      expect(resultado!.pesoRealKg).toBe(2.5);
-      expect(resultado!.pesoVolumetricoKg).toBe(12);
-      expect(resultado!.pesoFacturadoKg).toBe(12);
-      // tarifaBase (5000) + (12 * 1200 = 14400) = 19400
-      expect(resultado!.costoVariablePeso).toBe(14400);
-      expect(resultado!.costoTotalEstimado).toBe(19400);
-    });
-
-    it('debe retornar null si el servicio solicitado no existe en la lista', () => {
-      const peticion: CotizacionRequest = {
-        servicioId: 999,
-        pesoKg: 5
-      };
-
-      const resultado = service.calcularCotizacion(peticion, mockServicios);
-      expect(resultado).toBeNull();
-    });
   });
 });

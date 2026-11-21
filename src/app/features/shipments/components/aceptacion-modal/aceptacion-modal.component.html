@@ -1,0 +1,183 @@
+<div class="modal-backdrop" (click)="cerrarModal()" role="presentation">
+  <div
+    class="modal-dialog"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-aceptacion-titulo">
+
+    <header class="modal-header">
+      <div class="modal-titulos">
+        <h2 id="modal-aceptacion-titulo" class="modal-titulo">Aceptar envío en sucursal</h2>
+        <p class="modal-subtitulo">
+          Código: <strong>{{ envio.codigoSeguimiento }}</strong>
+        </p>
+      </div>
+      <button
+        type="button"
+        class="btn-cerrar-modal"
+        (click)="cerrarModal()"
+        aria-label="Cerrar ventana">
+        &times;
+      </button>
+    </header>
+
+    @if (envioActualizado(); as act) {
+      <div class="modal-cuerpo resultado-exitoso">
+        <div class="alerta-exito">
+          <h3>Envío aceptado exitosamente</h3>
+          <p>La recepción física y tarifación final han sido confirmadas por el servidor.</p>
+        </div>
+
+        <div class="tarjeta-precio-final">
+          <span class="etiqueta-precio-final">Precio final confirmado</span>
+          <div class="monto-final">
+            {{ formatearMonto(act.preregistro?.precioFinal?.totalClp) }}
+          </div>
+          <p class="diferencia-estimado">{{ calcularDiferenciaEstimadoFinal() }}</p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-primario" (click)="cerrarModal()">
+            Entendido y cerrar
+          </button>
+        </footer>
+      </div>
+    } @else {
+      <!-- Resumen Declarado -->
+      <div class="resumen-declarado">
+        <h3>Datos declarados por el cliente</h3>
+        <div class="grid-resumen">
+          <div>
+            <span>Peso declarado:</span>
+            <strong>{{ envio.pesoKg }} kg</strong>
+          </div>
+          <div>
+            <span>Medidas declaradas:</span>
+            <strong>
+              @if (envio.preregistro?.medidasDeclaradas; as m) {
+                {{ m.largoCm }} x {{ m.anchoCm }} x {{ m.altoCm }} cm
+              } @else {
+                Sin medidas declaradas
+              }
+            </strong>
+          </div>
+          <div>
+            <span>Precio estimado:</span>
+            <strong>{{ formatearMonto(envio.preregistro?.precioEstimado?.totalClp) }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="formulario" (ngSubmit)="enviar()" class="modal-cuerpo" novalidate>
+        <div class="campo">
+          <label for="acp-peso-verificado">Peso verificado (kg) *</label>
+          <input
+            #inputPeso
+            type="number"
+            id="acp-peso-verificado"
+            formControlName="pesoVerificadoKg"
+            step="0.01"
+            min="0.01"
+            max="500"
+            class="input-control"
+            [class.invalido]="formulario.get('pesoVerificadoKg')?.invalid && formulario.get('pesoVerificadoKg')?.touched"
+          />
+          @if (formulario.get('pesoVerificadoKg')?.invalid && formulario.get('pesoVerificadoKg')?.touched) {
+            <span class="error-campo">El peso verificado es obligatorio (entre 0.01 y 500 kg).</span>
+          }
+        </div>
+
+        <fieldset formGroupName="medidas" class="grupo-medidas">
+          <legend>Medidas verificadas en sucursal (las tres o ninguna)</legend>
+          <div class="fila-dimensiones">
+            <div class="campo">
+              <label for="acp-largo">Largo (cm)</label>
+              <input
+                type="number"
+                id="acp-largo"
+                formControlName="largoCm"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                class="input-control"
+              />
+            </div>
+
+            <div class="campo">
+              <label for="acp-ancho">Ancho (cm)</label>
+              <input
+                type="number"
+                id="acp-ancho"
+                formControlName="anchoCm"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                class="input-control"
+              />
+            </div>
+
+            <div class="campo">
+              <label for="acp-alto">Alto (cm)</label>
+              <input
+                type="number"
+                id="acp-alto"
+                formControlName="altoCm"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                class="input-control"
+              />
+            </div>
+          </div>
+
+          @if (formulario.get('medidas')?.hasError('medidasIncompletas')) {
+            <span class="error-campo">
+              Debes registrar las 3 dimensiones juntas o dejarlas en blanco para conservar las declaradas.
+            </span>
+          }
+        </fieldset>
+
+        <div class="campo">
+          <label for="acp-observacion">Observación de recepción (opcional)</label>
+          <textarea
+            id="acp-observacion"
+            formControlName="observacion"
+            rows="2"
+            maxlength="500"
+            placeholder="Detalles del embalaje, estado del paquete, etc."
+            class="input-control"></textarea>
+        </div>
+
+        @if (errorTraducido(); as err) {
+          <div class="alerta-error" role="alert">
+            <p class="mensaje-error"><strong>Error:</strong> {{ err.mensaje }}</p>
+            @if (err.detalles.length > 0) {
+              <ul class="detalles-error">
+                @for (d of err.detalles; track d) {
+                  <li>{{ d }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secundario" (click)="cerrarModal()">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primario"
+            [disabled]="guardando() || formulario.invalid">
+            {{ guardando() ? 'Confirmando aceptación...' : 'Confirmar aceptación y precio' }}
+          </button>
+        </footer>
+      </form>
+    }
+
+  </div>
+</div>

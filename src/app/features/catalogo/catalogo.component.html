@@ -11,7 +11,7 @@
       </nav>
       <h1 class="titulo-pagina">Catalogo de Servicios y Flota Logistica</h1>
       <p class="descripcion-pagina">
-        Supervision de capacidad diaria, administracion de tarifas por tipo de vehiculo y cotizador en tiempo real.
+        Supervision de capacidad diaria, administracion de tarifas por tipo de vehiculo y enlaces a cotizacion oficial.
       </p>
     </div>
 
@@ -255,10 +255,10 @@
                 <!-- Acciones -->
                 <td class="texto-centro">
                   <div class="botones-accion">
-                    <button
-                      type="button"
+                    <a
                       class="btn-icono btn-cotizar"
-                      (click)="seleccionarServicioParaCotizar(servicio)"
+                      routerLink="/cotizar"
+                      [queryParams]="{ servicioId: servicio.id }"
                       title="Cotizar con este servicio"
                       aria-label="Cotizar con este servicio"
                     >
@@ -266,7 +266,22 @@
                         <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 1a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm4-1a1 1 0 100 2h.01a1 1 0 100-2H13zM7 8a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm2 1a1 1 0 100-2h.01a1 1 0 100 2H9zm3-1a1 1 0 011-1h.01a1 1 0 110 2H13a1 1 0 01-1-1z" clip-rule="evenodd" />
                       </svg>
                       Cotizar
-                    </button>
+                    </a>
+
+                    <a
+                      class="btn-icono btn-crear-envio"
+                      routerLink="/envios"
+                      [queryParams]="{ servicioId: servicio.id }"
+                      title="Crear envío con este servicio"
+                      aria-label="Crear envío con este servicio"
+                    >
+                      <svg viewBox="0 0 20 20" fill="currentColor" class="icono-accion">
+                        <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                        <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-2V5H5v14a1 1 0 01-1-1V5z" />
+                        <path d="M7 11a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H8a1 1 0 01-1-1v-6z" />
+                      </svg>
+                      Crear envío
+                    </a>
 
                     @if (esAdmin()) {
                       <button
@@ -290,206 +305,6 @@
         </table>
       </div>
     }
-  </section>
-
-  <!-- Seccion Tarifador Rapido (Calculadora de Envios) -->
-  <section class="panel-tarifador" id="seccion-tarifador" aria-labelledby="titulo-tarifador">
-    <div class="cabecera-tarifador">
-      <div class="icono-cabecera-tarifador">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="4" y="2" width="16" height="20" rx="2" />
-          <line x1="8" y1="6" x2="16" y2="6" />
-          <line x1="16" y1="14" x2="16" y2="18" />
-          <path d="M16 10h.01" />
-          <path d="M12 10h.01" />
-          <path d="M8 10h.01" />
-          <path d="M12 14h.01" />
-          <path d="M8 14h.01" />
-          <path d="M12 18h.01" />
-          <path d="M8 18h.01" />
-        </svg>
-      </div>
-      <div>
-        <h2 id="titulo-tarifador" class="subtitulo-seccion">Tarifador Rapido: Calculadora de Envios</h2>
-        <p class="descripcion-seccion">Calcule al instante el costo estimado de transporte segun peso y volumen.</p>
-      </div>
-    </div>
-
-    <div class="grid-tarifador">
-      <!-- Columna Izquierda: Parametros de Calculo -->
-      <div class="formulario-tarifador">
-        <!-- Selector de Servicio -->
-        <div class="campo">
-          <label for="cot-servicio">Servicio Logistico</label>
-          <select
-            id="cot-servicio"
-            [value]="cotizacionServicioId()"
-            (change)="cotizacionServicioId.set(+$any($event.target).value)"
-            class="input-control"
-          >
-            @for (servicio of servicios(); track servicio.id) {
-              <option [value]="servicio.id" [disabled]="!servicio.activo">
-                {{ servicio.nombre }} - Base: {{ formatearMoneda(servicio.tarifaBase) }} ({{ servicio.tipoVehiculo }})
-              </option>
-            }
-          </select>
-        </div>
-
-        <!-- Peso en Kilogramos -->
-        <div class="campo">
-          <label for="cot-peso">
-            Peso del Paquete (Kg)
-            <span class="subetiqueta">Minimo 0.1 kg</span>
-          </label>
-          <div class="control-peso">
-            <button type="button" class="btn-ajuste" (click)="ajustarPeso(-0.5)" aria-label="Restar 0.5 kilos">-</button>
-            <input
-              type="number"
-              id="cot-peso"
-              [value]="cotizacionPeso()"
-              (input)="cotizacionPeso.set(+$any($event.target).value)"
-              min="0.1"
-              max="500"
-              step="0.1"
-              class="input-peso"
-            />
-            <button type="button" class="btn-ajuste" (click)="ajustarPeso(0.5)" aria-label="Sumar 0.5 kilos">+</button>
-          </div>
-
-          <!-- Botones de Presets de Peso -->
-          <div class="chips-peso" aria-label="Pesos frecuentes">
-            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 0.5" (click)="fijarPeso(0.5)">0.5 kg</button>
-            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 1" (click)="fijarPeso(1)">1 kg</button>
-            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 3" (click)="fijarPeso(3)">3 kg</button>
-            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 5" (click)="fijarPeso(5)">5 kg</button>
-            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 15" (click)="fijarPeso(15)">15 kg</button>
-            <button type="button" class="chip" [class.activo]="cotizacionPeso() === 30" (click)="fijarPeso(30)">30 kg</button>
-          </div>
-        </div>
-
-        <!-- Toggle Dimensiones Volumetricas -->
-        <div class="campo-toggle">
-          <label class="switch-contenedor">
-            <input
-              type="checkbox"
-              [checked]="incluirDimensiones()"
-              (change)="incluirDimensiones.set($any($event.target).checked)"
-            />
-            <span class="switch-slider"></span>
-          </label>
-          <span class="texto-toggle">Calcular peso volumetrico por dimensiones (L x A x H / 5000)</span>
-        </div>
-
-        @if (incluirDimensiones()) {
-          <div class="grid-dimensiones">
-            <div class="campo">
-              <label for="cot-largo">Largo (cm)</label>
-              <input
-                type="number"
-                id="cot-largo"
-                min="1"
-                placeholder="Ej: 30"
-                [value]="cotizacionLargo()"
-                (input)="cotizacionLargo.set(+$any($event.target).value)"
-                class="input-control"
-              />
-            </div>
-            <div class="campo">
-              <label for="cot-ancho">Ancho (cm)</label>
-              <input
-                type="number"
-                id="cot-ancho"
-                min="1"
-                placeholder="Ej: 20"
-                [value]="cotizacionAncho()"
-                (input)="cotizacionAncho.set(+$any($event.target).value)"
-                class="input-control"
-              />
-            </div>
-            <div class="campo">
-              <label for="cot-alto">Alto (cm)</label>
-              <input
-                type="number"
-                id="cot-alto"
-                min="1"
-                placeholder="Ej: 15"
-                [value]="cotizacionAlto()"
-                (input)="cotizacionAlto.set(+$any($event.target).value)"
-                class="input-control"
-              />
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- Columna Derecha: Tarjeta de Cotizacion en Vivo -->
-      <div class="resultado-tarifador">
-        @if (cotizacionActual(); as cot) {
-          <div class="tarjeta-cotizacion">
-            <div class="cabecera-tarjeta-cotizacion">
-              <span class="etiqueta-cotizacion">Cotizacion Estimada</span>
-              <span class="badge-vehiculo-cotizacion">{{ cot.servicio.tipoVehiculo }}</span>
-            </div>
-
-            <div class="nombre-servicio-cotizacion">{{ cot.servicio.nombre }}</div>
-
-            <!-- Desglose de Calculo -->
-            <div class="desglose-lineas">
-              <div class="linea-desglose">
-                <span>Tarifa Base del Servicio:</span>
-                <strong>{{ formatearMoneda(cot.tarifaBase) }}</strong>
-              </div>
-
-              <div class="linea-desglose">
-                <span>
-                  Recargo por Kilo ({{ cot.pesoFacturadoKg }} kg x {{ formatearMoneda(cot.servicio.precioPorKg) }}):
-                </span>
-                <strong>{{ formatearMoneda(cot.costoVariablePeso) }}</strong>
-              </div>
-
-              @if (cot.pesoVolumetricoKg > 0) {
-                <div class="linea-desglose nota-volumetrica">
-                  <span>Peso Real / Volumetrico:</span>
-                  <span>{{ cot.pesoRealKg }} kg / {{ cot.pesoVolumetricoKg }} kg (aplica el mayor)</span>
-                </div>
-              }
-
-              <div class="linea-desglose">
-                <span>Capacidad del Servicio Hoy:</span>
-                @if (cot.servicio.capacidadDisponible > 0) {
-                  <span class="disponibilidad-ok">{{ cot.servicio.capacidadDisponible }} cupos libres</span>
-                } @else {
-                  <span class="disponibilidad-agotada">Cupos Agotados</span>
-                }
-              </div>
-            </div>
-
-            <hr class="divisor-cotizacion" />
-
-            <!-- Total Destacado -->
-            <div class="bloque-total-cotizacion">
-              <span class="etiqueta-total">Total Estimado (IVA incl.)</span>
-              <div class="monto-total">{{ formatearMoneda(cot.costoTotalEstimado) }}</div>
-            </div>
-
-            <div class="acciones-cotizacion">
-              <button type="button" class="btn btn-copiar" (click)="copiarCotizacion()">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="icono-btn">
-                  <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
-                  <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-2V5H5v14a1 1 0 01-1-1V5z" />
-                  <path d="M7 11a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H8a1 1 0 01-1-1v-6z" />
-                </svg>
-                Copiar Cotizacion
-              </button>
-
-              <a routerLink="/envios" class="btn btn-primario btn-crear-envio">
-                Crear Envio con este Servicio
-              </a>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
   </section>
 
   <!-- Modal Reactivo de Creacion / Edicion (Restringido a ROLE_ADMIN) -->

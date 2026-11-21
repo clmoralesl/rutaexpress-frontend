@@ -38,24 +38,6 @@ export interface ActualizarServicioDto {
   activo?: boolean;
 }
 
-export interface CotizacionRequest {
-  servicioId: number;
-  pesoKg: number;
-  largoCm?: number;
-  anchoCm?: number;
-  altoCm?: number;
-}
-
-export interface CotizacionResultado {
-  servicio: ServicioCatalogo;
-  pesoRealKg: number;
-  pesoVolumetricoKg: number;
-  pesoFacturadoKg: number;
-  tarifaBase: number;
-  costoVariablePeso: number;
-  costoTotalEstimado: number;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -156,7 +138,6 @@ export class CatalogoService {
         return this.obtenerServiciosContingencia();
       }),
       catchError(() => {
-        // En caso de modo offline, contingencia o falta de token, responde con el estado local
         return of(this.obtenerServiciosContingencia());
       })
     );
@@ -181,7 +162,6 @@ export class CatalogoService {
         return nuevo;
       }),
       catchError(() => {
-        // Fallback local: asigna ID secuencial y almacena en memoria
         const nuevoLocal: ServicioCatalogo = {
           id: this.serviciosLocales.length > 0 ? Math.max(...this.serviciosLocales.map(s => s.id)) + 1 : 1,
           codigo: dto.codigo.trim().toUpperCase(),
@@ -215,7 +195,6 @@ export class CatalogoService {
         return actualizado;
       }),
       catchError(() => {
-        // Fallback local de edicion
         const servicioExistente = this.serviciosLocales.find(s => s.id === id);
         if (servicioExistente) {
           if (dto.nombre !== undefined) servicioExistente.nombre = dto.nombre.trim();
@@ -235,44 +214,5 @@ export class CatalogoService {
         throw new Error('Servicio no encontrado');
       })
     );
-  }
-
-  /**
-   * Motor de tarifacion y calculo de cotizaciones.
-   * Aplica la formula logistica estandar con soporte para peso volumetrico:
-   * Peso Volumetrico (kg) = (Largo x Ancho x Alto) / 5000
-   * Peso Facturable = Max(Peso Real, Peso Volumetrico)
-   * Costo Total = Tarifa Base + (Peso Facturable * Precio por Kg)
-   */
-  calcularCotizacion(request: CotizacionRequest, servicios: ServicioCatalogo[]): CotizacionResultado | null {
-    const servicio = servicios.find(s => s.id === request.servicioId);
-    if (!servicio) {
-      return null;
-    }
-
-    const pesoReal = Math.max(0.1, Number(request.pesoKg) || 0.1);
-    let pesoVolumetrico = 0;
-
-    if (request.largoCm && request.anchoCm && request.altoCm) {
-      const largo = Math.max(1, Number(request.largoCm));
-      const ancho = Math.max(1, Number(request.anchoCm));
-      const alto = Math.max(1, Number(request.altoCm));
-      pesoVolumetrico = Number(((largo * ancho * alto) / 5000).toFixed(2));
-    }
-
-    const pesoFacturado = Number(Math.max(pesoReal, pesoVolumetrico).toFixed(2));
-    const tarifaBase = Number(servicio.tarifaBase);
-    const costoVariablePeso = Number((pesoFacturado * Number(servicio.precioPorKg)).toFixed(0));
-    const costoTotalEstimado = tarifaBase + costoVariablePeso;
-
-    return {
-      servicio,
-      pesoRealKg: pesoReal,
-      pesoVolumetricoKg: pesoVolumetrico,
-      pesoFacturadoKg: pesoFacturado,
-      tarifaBase,
-      costoVariablePeso,
-      costoTotalEstimado
-    };
   }
 }
