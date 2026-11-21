@@ -25,6 +25,7 @@ export interface EnlaceNavegacion {
 
 export const ENLACES_NAVEGACION: readonly EnlaceNavegacion[] = [
   { etiqueta: 'Inicio',    ruta: '/',          soloAutenticado: false, exacto: true },
+  { etiqueta: 'Cotizar',   ruta: '/cotizar',   soloAutenticado: false },
   { etiqueta: 'Rastreo',   ruta: '/rastreo',   soloAutenticado: false },
   { etiqueta: 'Dashboard', ruta: '/dashboard', soloAutenticado: true },
   { etiqueta: 'Catálogo',  ruta: '/catalogo',  soloAutenticado: true },

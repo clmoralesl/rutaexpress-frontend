@@ -12,7 +12,6 @@ import { AuthService } from '../../core/auth/auth.service';
 import {
   ActualizarServicioDto,
   CatalogoService,
-  CotizacionResultado,
   CrearServicioDto,
   ServicioCatalogo
 } from '../../core/services/catalogo.service';
@@ -52,14 +51,6 @@ export class CatalogoComponent implements OnInit {
   readonly modoEdicion = signal<boolean>(false);
   readonly servicioEnEdicionId = signal<number | null>(null);
   servicioForm!: FormGroup;
-
-  // Tarifador interactivo
-  readonly cotizacionServicioId = signal<number>(1);
-  readonly cotizacionPeso = signal<number>(2.5);
-  readonly cotizacionLargo = signal<number | null>(null);
-  readonly cotizacionAncho = signal<number | null>(null);
-  readonly cotizacionAlto = signal<number | null>(null);
-  readonly incluirDimensiones = signal<boolean>(false);
 
   // KPIs calculados
   readonly totalServiciosActivos = computed(() =>
@@ -108,26 +99,6 @@ export class CatalogoComponent implements OnInit {
     });
   });
 
-  // Cotizacion reactiva en tiempo real
-  readonly cotizacionActual = computed<CotizacionResultado | null>(() => {
-    const sId = this.cotizacionServicioId();
-    const peso = this.cotizacionPeso();
-    const largo = this.incluirDimensiones() ? this.cotizacionLargo() ?? undefined : undefined;
-    const ancho = this.incluirDimensiones() ? this.cotizacionAncho() ?? undefined : undefined;
-    const alto = this.incluirDimensiones() ? this.cotizacionAlto() ?? undefined : undefined;
-
-    return this.catalogoService.calcularCotizacion(
-      {
-        servicioId: sId,
-        pesoKg: peso,
-        largoCm: largo,
-        anchoCm: ancho,
-        altoCm: alto
-      },
-      this.servicios()
-    );
-  });
-
   constructor(
     private readonly catalogoService: CatalogoService,
     readonly authService: AuthService,
@@ -140,7 +111,6 @@ export class CatalogoComponent implements OnInit {
   ngOnInit(): void {
     // Carga inicial inmediata con contingencia para evitar estado vacio mientras responde el servidor
     this.servicios.set(this.catalogoService.obtenerServiciosContingencia());
-    this.actualizarServicioCotizacionPorDefecto();
     this.cargarServicios();
   }
 
@@ -169,23 +139,14 @@ export class CatalogoComponent implements OnInit {
           this.origenDatos.set('CONTINGENCIA');
         }
         this.cargando.set(false);
-        this.actualizarServicioCotizacionPorDefecto();
       },
       error: () => {
         this.servicios.set(this.catalogoService.obtenerServiciosContingencia());
         this.origenDatos.set('CONTINGENCIA');
         this.cargando.set(false);
-        this.actualizarServicioCotizacionPorDefecto();
         this.notificationService.error('No fue posible sincronizar el catalogo con el servidor. Se cargaron datos de contingencia.');
       }
     });
-  }
-
-  private actualizarServicioCotizacionPorDefecto(): void {
-    const lista = this.servicios();
-    if (lista.length > 0 && !lista.some(s => s.id === this.cotizacionServicioId())) {
-      this.cotizacionServicioId.set(lista[0].id);
-    }
   }
 
   esAdmin(): boolean {
@@ -315,47 +276,6 @@ export class CatalogoComponent implements OnInit {
           this.guardando.set(false);
           this.notificationService.error(err.message || 'Error al crear el servicio.');
         }
-      });
-    }
-  }
-
-  seleccionarServicioParaCotizar(servicio: ServicioCatalogo): void {
-    this.cotizacionServicioId.set(servicio.id);
-    const elemento = document.getElementById('seccion-tarifador');
-    if (elemento) {
-      elemento.scrollIntoView({ behavior: 'smooth' });
-    }
-    this.notificationService.info(`Servicio "${servicio.nombre}" seleccionado en la calculadora de cotizaciones.`);
-  }
-
-  ajustarPeso(incremento: number): void {
-    const actual = this.cotizacionPeso();
-    const nuevo = Math.max(0.1, Number((actual + incremento).toFixed(1)));
-    this.cotizacionPeso.set(nuevo);
-  }
-
-  fijarPeso(peso: number): void {
-    this.cotizacionPeso.set(peso);
-  }
-
-  copiarCotizacion(): void {
-    const cot = this.cotizacionActual();
-    if (!cot) return;
-
-    const texto = [
-      `--- COTIZACION RUTAEXPRESS ---`,
-      `Servicio: ${cot.servicio.nombre} (${cot.servicio.tipoVehiculo})`,
-      `Peso Facturado: ${cot.pesoFacturadoKg} kg`,
-      cot.pesoVolumetricoKg > 0 ? `(Real: ${cot.pesoRealKg} kg | Volumetrico: ${cot.pesoVolumetricoKg} kg)` : '',
-      `Tarifa Base: ${this.formatearMoneda(cot.tarifaBase)}`,
-      `Recargo por Kilo: ${this.formatearMoneda(cot.costoVariablePeso)}`,
-      `TOTAL ESTIMADO: ${this.formatearMoneda(cot.costoTotalEstimado)}`,
-      `Disponibilidad: ${cot.servicio.capacidadDisponible > 0 ? 'Cupos Disponibles' : 'Capacidad Agotada'}`
-    ].filter(Boolean).join('\n');
-
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(texto).then(() => {
-        this.notificationService.success('Detalle de cotizacion copiado al portapapeles.');
       });
     }
   }

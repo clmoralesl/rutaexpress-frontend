@@ -69,15 +69,16 @@ describe('NavbarComponent', () => {
       fixture.detectChanges();
     });
 
-    it('debe mostrar únicamente los enlaces públicos Inicio y Rastreo', () => {
+    it('debe mostrar únicamente los enlaces públicos Inicio, Cotizar y Rastreo', () => {
       const etiquetas = component.enlacesVisibles().map((e) => e.etiqueta);
-      expect(etiquetas).toEqual(['Inicio', 'Rastreo']);
+      expect(etiquetas).toEqual(['Inicio', 'Cotizar', 'Rastreo']);
 
       const enlacesDom = fixture.debugElement
         .queryAll(By.css('.enlace-nav'))
         .map((el) => el.nativeElement.textContent.trim());
 
       expect(enlacesDom).toContain('Inicio');
+      expect(enlacesDom).toContain('Cotizar');
       expect(enlacesDom).toContain('Rastreo');
       expect(enlacesDom).not.toContain('Dashboard');
       expect(enlacesDom).not.toContain('Catálogo');
@@ -108,6 +109,7 @@ describe('NavbarComponent', () => {
       const etiquetas = component.enlacesVisibles().map((e) => e.etiqueta);
       expect(etiquetas).toEqual([
         'Inicio',
+        'Cotizar',
         'Rastreo',
         'Dashboard',
         'Catálogo',
@@ -173,7 +175,7 @@ describe('NavbarComponent', () => {
       fixture.detectChanges();
 
       const etiquetas = component.enlacesVisibles().map((e) => e.etiqueta);
-      expect(etiquetas).toEqual(['Inicio', 'Rastreo', 'Dashboard', 'Catálogo']);
+      expect(etiquetas).toEqual(['Inicio', 'Cotizar', 'Rastreo', 'Dashboard', 'Catálogo']);
     });
   });
 

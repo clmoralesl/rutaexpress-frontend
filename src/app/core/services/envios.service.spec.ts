@@ -1,6 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { EnviosService, Envio, CrearEnvioRequest } from './envios.service';
+import {
+  EnviosService,
+  Envio,
+  CrearEnvioRequest,
+  AceptarEnvioRequest
+} from './envios.service';
 import { environment } from '../../../environments/environment';
 
 describe('EnviosService', () => {
@@ -71,12 +76,20 @@ describe('EnviosService', () => {
   describe('crear', () => {
     it('debe enviar POST con el payload para crear un envio', () => {
       const nuevo: CrearEnvioRequest = {
-        codigoSeguimiento: 'RE-2026-002',
         rutRemitente: '11111111-1',
         rutDestinatario: '22222222-2',
-        direccionOrigen: 'Origen A',
-        direccionDestino: 'Destino B',
-        pesoKg: 3.5
+        sucursalOrigenId: 1,
+        servicioId: 2,
+        destino: {
+          calle: 'Calle Los Aromos',
+          numero: '456',
+          complemento: null,
+          idComuna: 13101
+        },
+        pesoKg: 3.5,
+        largoCm: 20,
+        anchoCm: 15,
+        altoCm: 10
       };
 
       service.crear(nuevo).subscribe((res) => {
@@ -87,6 +100,28 @@ describe('EnviosService', () => {
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(nuevo);
       req.flush({ ...envioMock, id: 2, codigoSeguimiento: 'RE-2026-002' });
+    });
+  });
+
+  describe('aceptar', () => {
+    it('debe enviar POST a /api/bff/envios/7/aceptacion con el cuerpo correspondiente', () => {
+      const solicitud: AceptarEnvioRequest = {
+        pesoVerificadoKg: 4.5,
+        largoCm: 30,
+        anchoCm: 20,
+        altoCm: 10,
+        observacion: 'Caja reforzada'
+      };
+
+      service.aceptar(7, solicitud).subscribe((res) => {
+        expect(res.id).toBe(7);
+        expect(res.estado).toBe('ACEPTADO');
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/7/aceptacion`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(solicitud);
+      req.flush({ ...envioMock, id: 7, estado: 'ACEPTADO' });
     });
   });
 

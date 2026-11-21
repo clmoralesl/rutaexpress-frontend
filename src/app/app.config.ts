@@ -1,4 +1,3 @@
-
 import {
   ApplicationConfig,
   inject,
@@ -24,8 +23,7 @@ import {
   MsalService,
   MsalGuard,
   MsalInterceptor,
-  MsalGuardConfiguration,
-  MsalInterceptorConfiguration
+  MsalGuardConfiguration
 } from '@azure/msal-angular';
 
 import {
@@ -37,6 +35,7 @@ import {
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+import { msalInterceptorConfigFactory } from './core/auth/msal.config';
 
 export function inicializarOffsetScroll(scroller: ViewportScroller): () => [number, number] {
   const calculadorOffset = (): [number, number] => [
@@ -66,40 +65,6 @@ export function msalGuardConfigFactory(): MsalGuardConfiguration {
     authRequest: {
       scopes: environment.azure.scopes
     }
-  };
-}
-
-export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const protectedResourceMap = new Map<string, Array<string> | null>();
-
-  protectedResourceMap.set(
-    `${environment.apiUrl}/api/publico/seguimiento/*`,
-    null
-  );
-
-  protectedResourceMap.set(
-    `${environment.apiUrl}/api/bff/catalogo/servicios*`,
-    null
-  );
-
-  protectedResourceMap.set(
-    `${environment.apiUrl}/api/bff/auditoria*`,
-    null
-  );
-
-  protectedResourceMap.set(
-    `${environment.apiUrl}/api/bff/reportes*`,
-    null
-  );
-
-  protectedResourceMap.set(
-    `${environment.apiUrl}/api/*`,
-    environment.azure.scopes
-  );
-
-  return {
-    interactionType: InteractionType.Redirect,
-    protectedResourceMap
   };
 }
 
@@ -174,7 +139,6 @@ export const appConfig: ApplicationConfig = {
           tokenResult.accessToken
         );
 
-        // La navegaciÃƒÂ³n se realizarÃƒÂ¡ cuando Angular arranque.
         sessionStorage.setItem(
           'rutaexpress_login_completado',
           'true'
@@ -182,7 +146,7 @@ export const appConfig: ApplicationConfig = {
 
       } catch (error) {
         console.error(
-          'Error procesando la redirecciÃƒÂ³n de Microsoft',
+          'Error procesando la redirección de Microsoft',
           error
         );
       }
