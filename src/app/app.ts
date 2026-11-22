@@ -1,18 +1,26 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { AuthService } from './core/auth/auth.service';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { ToastComponent } from './shared/feedback/toast.component';
+import { NavbarComponent } from './shared/components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, ToastComponent, NavbarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
 
-  constructor(private readonly authService: AuthService) {}
+  private readonly router = inject(Router);
 
   ngOnInit(): void {
-    this.authService.procesarRedireccion();
+    const loginCompletado =
+      sessionStorage.getItem('rutaexpress_login_completado');
+
+    if (loginCompletado === 'true') {
+      sessionStorage.removeItem('rutaexpress_login_completado');
+      this.router.navigate(['/dashboard']);
+    }
   }
 }

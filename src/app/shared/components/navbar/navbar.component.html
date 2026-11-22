@@ -1,0 +1,90 @@
+<!-- Enlace de accesibilidad para saltar directamente al contenido principal -->
+<button type="button" class="enlace-saltar" (click)="irAlContenido($event)">
+  Saltar al contenido principal
+</button>
+
+<header class="barra-navegacion" role="banner">
+  <div class="contenedor-barra">
+
+    <!-- Logotipo y Nombre Corporativo Unico -->
+    <a routerLink="/" class="logo-enlace" aria-label="Ir a la página de inicio de RutaExpress">
+      <span class="icono-marca">R</span>
+      <span class="nombre-marca">RutaExpress</span>
+    </a>
+
+    <!-- Boton Hamburguesa para Dispositivos Moviles (<= 992px) -->
+    <button
+      #botonHamburguesa
+      type="button"
+      class="btn-hamburguesa"
+      [attr.aria-expanded]="menuMovilAbierto()"
+      aria-controls="navegacion-principal"
+      aria-label="Abrir o cerrar menú de navegación"
+      (click)="alternarMenuMovil()">
+      <span class="linea-hamburguesa" aria-hidden="true"></span>
+      <span class="linea-hamburguesa" aria-hidden="true"></span>
+      <span class="linea-hamburguesa" aria-hidden="true"></span>
+    </button>
+
+    <!-- Contenedor Desplegable del Menu -->
+    <div class="menu-desplegable" [class.abierto]="menuMovilAbierto()">
+
+      <!-- Enlaces de Navegacion segun Sesion y Rol -->
+      <nav
+        id="navegacion-principal"
+        class="navegacion-principal"
+        aria-label="Navegación principal">
+        @for (enlace of enlacesVisibles(); track enlace.ruta) {
+          <a
+            [routerLink]="enlace.ruta"
+            routerLinkActive="activo"
+            [routerLinkActiveOptions]="{ exact: enlace.exacto ?? false }"
+            ariaCurrentWhenActive="page"
+            class="enlace-nav"
+            (click)="cerrarMenuMovil()">
+            {{ enlace.etiqueta }}
+          </a>
+        }
+      </nav>
+
+      <!-- Seccion de Estado de Sesion y Acciones de Usuario -->
+      <div class="seccion-usuario">
+        @if (sesion.autenticado()) {
+          <div class="datos-usuario">
+            <span class="nombre-usuario" [title]="sesion.nombreUsuario()">
+              {{ sesion.nombreUsuario() }}
+            </span>
+            <span class="rol-badge" [attr.data-rol]="sesion.rolActivo()">
+              {{ sesion.rolActivo() }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn-cerrar-sesion"
+            (click)="abrirDialogoSalida()">
+            Cerrar sesión
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="btn-iniciar-sesion"
+            (click)="iniciarSesion()">
+            Iniciar sesión
+          </button>
+        }
+      </div>
+
+    </div>
+
+  </div>
+</header>
+
+<!-- Dialogo de confirmacion reutilizable para el cierre de sesion -->
+<app-confirm-dialog
+  [visible]="mostrarDialogoSalida()"
+  title="Cerrar sesión"
+  message="¿Seguro que deseas cerrar tu sesión en RutaExpress?"
+  (confirmed)="confirmarCerrarSesion()"
+  (cancelled)="cancelarCerrarSesion()">
+</app-confirm-dialog>

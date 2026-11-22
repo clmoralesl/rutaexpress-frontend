@@ -1,0 +1,304 @@
+<main class="cotizador-pagina">
+  <div class="encabezado-cotizador">
+    <h1>Cotizador de envíos</h1>
+    <p class="subtitulo">Calcula el costo estimado de tu encomienda de forma rápida y transparente.</p>
+  </div>
+
+  <div class="grid-cotizador">
+    <section class="panel-formulario" aria-labelledby="titulo-formulario">
+      <h2 id="titulo-formulario" class="panel-titulo">Datos de tu envío</h2>
+
+      <form [formGroup]="formulario" (ngSubmit)="cotizar()" novalidate>
+        <!-- Sucursal de Origen -->
+        <div class="campo">
+          <label for="cot-sucursal">Sucursal de origen *</label>
+          <select id="cot-sucursal" formControlName="sucursalOrigenId" class="control-formulario">
+            <option [value]="0">Selecciona una sucursal</option>
+            @for (suc of sucursales(); track suc.id) {
+              <option [value]="suc.id">
+                {{ suc.nombre }} - {{ suc.calle }} {{ suc.numero }}
+              </option>
+            }
+          </select>
+          @if (formulario.get('sucursalOrigenId')?.invalid && formulario.get('sucursalOrigenId')?.touched) {
+            <span class="error-validacion">Debes seleccionar una sucursal de origen.</span>
+          }
+        </div>
+
+        <!-- Servicio Logístico -->
+        <div class="campo">
+          <label for="cot-servicio">Servicio logístico *</label>
+          <select id="cot-servicio" formControlName="servicioId" class="control-formulario">
+            <option [value]="0">Selecciona un servicio</option>
+            @for (srv of servicios(); track srv.id) {
+              <option [value]="srv.id">
+                {{ describirServicio(srv) }}
+              </option>
+            }
+          </select>
+          @if (formulario.get('servicioId')?.invalid && formulario.get('servicioId')?.touched) {
+            <span class="error-validacion">Debes seleccionar un servicio de transporte.</span>
+          }
+        </div>
+
+        <!-- Región y Comuna de Destino -->
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="cot-region">Región de destino *</label>
+            <select id="cot-region" formControlName="idRegion" (change)="onRegionChange($event)" class="control-formulario">
+              <option [value]="0">Selecciona una región</option>
+              @for (reg of regiones(); track reg.idRegion) {
+                <option [value]="reg.idRegion">{{ reg.nombre }}</option>
+              }
+            </select>
+            @if (formulario.get('idRegion')?.invalid && formulario.get('idRegion')?.touched) {
+              <span class="error-validacion">Debes seleccionar una región.</span>
+            }
+          </div>
+
+          <div class="campo">
+            <label for="cot-comuna">Comuna de destino *</label>
+            <select id="cot-comuna" formControlName="idComunaDestino" class="control-formulario">
+              <option [value]="0">Selecciona una comuna</option>
+              @for (com of comunasDestino(); track com.idComuna) {
+                <option [value]="com.idComuna">{{ com.nombre }}</option>
+              }
+            </select>
+            @if (formulario.get('idComunaDestino')?.invalid && formulario.get('idComunaDestino')?.touched) {
+              <span class="error-validacion">Debes seleccionar una comuna de destino.</span>
+            }
+          </div>
+        </div>
+
+        <!-- Peso del paquete -->
+        <div class="campo">
+          <label for="cot-peso">Peso del paquete (kg) *</label>
+          <input
+            type="number"
+            id="cot-peso"
+            formControlName="pesoKg"
+            step="0.1"
+            min="0.01"
+            max="500"
+            placeholder="Ej: 2.5"
+            aria-describedby="cot-peso-resumen cot-peso-ayuda"
+            class="control-formulario"
+          />
+          <span id="cot-peso-resumen" class="texto-resumen">
+            Ingresa el peso en kilogramos (máximo permitido: 500 kg).
+          </span>
+
+          <app-ayuda-plegable idAyuda="cot-peso-ayuda" titulo="¿Cómo se calcula el peso facturable?">
+            <p>
+              El costo de envío se determina utilizando el <strong>peso facturable</strong>, que corresponde al valor mayor entre el peso real de la encomienda y su peso volumétrico.
+            </p>
+            <p>
+              <strong>Ejemplo referencial:</strong> Una caja de 40 x 30 x 20 cm suma 24.000 cm³. Con un divisor estándar de 4.000, el peso volumétrico resultante es de 6 kg. Si la caja pesa físicamente 2 kg, se facturará sobre los 6 kg volumétricos.
+            </p>
+            <p>
+              El factor divisor volumétrico exacto depende del servicio contratado. El valor final es calculado y validado siempre por el servidor de RutaExpress.
+            </p>
+          </app-ayuda-plegable>
+
+          @if (formulario.get('pesoKg')?.invalid && formulario.get('pesoKg')?.touched) {
+            <span class="error-validacion">El peso debe ser mayor a 0 y no puede superar 500 kg.</span>
+          }
+        </div>
+
+        <!-- Dimensiones Volumétricas Opcionales -->
+        <fieldset formGroupName="medidas" class="grupo-medidas">
+          <legend class="legend-medidas">Dimensiones del bulto (opcional: las tres o ninguna)</legend>
+          <span id="cot-medidas-resumen" class="texto-ayuda-campo">
+            Mide la caja cerrada, en centímetros enteros. Se verificarán en la sucursal.
+          </span>
+          <app-ayuda-plegable
+            idAyuda="cot-medidas-ayuda"
+            titulo="¿Cómo medir el paquete?"
+            resumen="Aprende a medir correctamente las dimensiones de tu encomienda">
+            <p>Para calcular el peso volumétrico, mide los extremos máximos de la caja cerrada:</p>
+            <ul>
+              <li><strong>Largo:</strong> el lado más extenso de la base.</li>
+              <li><strong>Ancho:</strong> el lado menor de la base.</li>
+              <li><strong>Alto:</strong> la distancia vertical desde la base hasta la parte superior.</li>
+            </ul>
+            <p>Usa siempre números enteros en centímetros (redondea hacia arriba si tienes dudas).</p>
+          </app-ayuda-plegable>
+
+          <div class="fila-dimensiones">
+            <div class="campo campo-dimension">
+              <label for="cot-largo">Largo (cm)</label>
+              <input
+                type="number"
+                id="cot-largo"
+                formControlName="largoCm"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                class="control-formulario"
+                [attr.aria-describedby]="formulario.get('medidas')?.hasError('medidasIncompletas') ? 'cot-medidas-resumen cot-medidas-ayuda cot-medidas-error' : 'cot-medidas-resumen cot-medidas-ayuda'"
+              />
+            </div>
+
+            <div class="campo campo-dimension">
+              <label for="cot-ancho">Ancho (cm)</label>
+              <input
+                type="number"
+                id="cot-ancho"
+                formControlName="anchoCm"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                class="control-formulario"
+                [attr.aria-describedby]="formulario.get('medidas')?.hasError('medidasIncompletas') ? 'cot-medidas-resumen cot-medidas-ayuda cot-medidas-error' : 'cot-medidas-resumen cot-medidas-ayuda'"
+              />
+            </div>
+
+            <div class="campo campo-dimension">
+              <label for="cot-alto">Alto (cm)</label>
+              <input
+                type="number"
+                id="cot-alto"
+                formControlName="altoCm"
+                min="1"
+                max="300"
+                step="1"
+                placeholder="cm"
+                class="control-formulario"
+                [attr.aria-describedby]="formulario.get('medidas')?.hasError('medidasIncompletas') ? 'cot-medidas-resumen cot-medidas-ayuda cot-medidas-error' : 'cot-medidas-resumen cot-medidas-ayuda'"
+              />
+            </div>
+          </div>
+
+          @if (formulario.get('medidas')?.hasError('medidasIncompletas')) {
+            <span id="cot-medidas-error" class="error-validacion">
+              Debes completar largo, ancho y alto juntos, o dejarlos todos en blanco.
+            </span>
+          }
+        </fieldset>
+
+        <!-- Mensajes de Error HTTP -->
+        @if (errorTraducido(); as err) {
+          <div class="alerta-error" role="alert">
+            <p class="mensaje-error"><strong>Error:</strong> {{ err.mensaje }}</p>
+            @if (err.detalles.length > 0) {
+              <ul class="detalles-error">
+                @for (d of err.detalles; track d) {
+                  <li>{{ d }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
+        <div class="acciones-formulario">
+          <button
+            type="submit"
+            class="btn btn-cotizar-submit"
+            [disabled]="botonDeshabilitado()">
+            @if (segundosEspera() > 0) {
+              <span>Espera {{ segundosEspera() }} segundos...</span>
+            } @else if (cargando()) {
+              <span>Calculando tarifa...</span>
+            } @else {
+              <span>Calcular cotización</span>
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Panel de Resultados -->
+    <section class="panel-resultado" aria-live="polite" aria-labelledby="titulo-resultado">
+      <h2 id="titulo-resultado" class="panel-titulo">Resultado de cotización</h2>
+
+      @if (resultado(); as res) {
+        <div class="tarjeta-resultado">
+          <div class="cabecera-tarjeta">
+            <span class="etiqueta-servicio">{{ res.servicioCodigo }}</span>
+            <span class="etiqueta-zona">Zona: {{ res.zona }}</span>
+          </div>
+
+          <div class="desglose-lineas">
+            <div class="linea">
+              <span>Zona tarifaria:</span>
+              <strong>{{ res.zona }}</strong>
+            </div>
+
+            <div class="linea">
+              <span>Factor de zona:</span>
+              <strong>{{ res.factorZona }}</strong>
+            </div>
+
+            <div class="linea">
+              <span>Tarifa base:</span>
+              <strong>{{ formatearMonto(res.tarifaBase) }}</strong>
+            </div>
+
+            <div class="linea">
+              <span>Precio por kg:</span>
+              <strong>{{ formatearMonto(res.precioPorKg) }}</strong>
+            </div>
+
+            <div class="linea">
+              <span>Peso volumétrico estimado:</span>
+              <span>{{ res.pesoVolumetricoKg }} kg</span>
+            </div>
+
+            <div class="linea">
+              <span>Peso facturable aplicado:</span>
+              <strong>{{ res.pesoFacturableKg }} kg</strong>
+            </div>
+
+            @if (res.plazoMinDias && res.plazoMaxDias) {
+              <div class="linea">
+                <span>Plazo estimado de entrega:</span>
+                <span>De {{ res.plazoMinDias }} a {{ res.plazoMaxDias }} días hábiles</span>
+              </div>
+            }
+
+            <div class="linea linea-sucursal">
+              <span>Sucursal de origen:</span>
+              <div>
+                <strong>{{ res.direccionSucursal.nombre }}</strong>
+                <p class="detalle-sucursal">
+                  {{ res.direccionSucursal.calle }} {{ res.direccionSucursal.numero }}
+                  @if (res.direccionSucursal.horario) {
+                    <br /><small>Horario: {{ res.direccionSucursal.horario }}</small>
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bloque-total">
+            <span class="etiqueta-total">Total estimado</span>
+            <div class="monto-total">{{ formatearMonto(res.totalClp) }}</div>
+            <small class="nota-iva">IVA incluido</small>
+          </div>
+
+          <div class="aviso-legal">
+            <p>{{ obtenerAviso() }}</p>
+            @if (res.validaHasta) {
+              <p class="validez">Cotización válida hasta: {{ formatearFechaChile(res.validaHasta) }}</p>
+            }
+          </div>
+
+          <div class="acciones-resultado">
+            <a
+              routerLink="/envios"
+              [queryParams]="{ servicioId: res.servicioId }"
+              class="btn btn-crear-desde-cotizacion">
+              Crear envío con este servicio
+            </a>
+          </div>
+        </div>
+      } @else {
+        <div class="estado-espera">
+          <p>Completa el formulario y presiona <strong>Calcular cotización</strong> para conocer el valor de tu envío.</p>
+        </div>
+      }
+    </section>
+  </div>
+</main>

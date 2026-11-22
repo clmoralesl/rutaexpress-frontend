@@ -1,0 +1,167 @@
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  EnviosService,
+  Envio,
+  CrearEnvioRequest,
+  AceptarEnvioRequest
+} from './envios.service';
+import { environment } from '../../../environments/environment';
+
+describe('EnviosService', () => {
+  let service: EnviosService;
+  let httpMock: HttpTestingController;
+  const baseUrl = `${environment.apiUrl}/api/bff/envios`;
+
+  const envioMock: Envio = {
+    id: 1,
+    codigoSeguimiento: 'RE-2026-001',
+    rutRemitente: '15678901-2',
+    rutDestinatario: '18234567-8',
+    direccionOrigen: 'Av. Providencia 1234, Santiago',
+    direccionDestino: 'Calle Los Aromos 456, Maipu',
+    pesoKg: 2.5,
+    estado: 'CREADO',
+    fechaCreacion: '2026-10-18T23:22:43.735Z',
+    fechaActualizacion: '2026-10-18T23:22:43.735Z'
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [EnviosService]
+    });
+
+    service = TestBed.inject(EnviosService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('debe crearse correctamente', () => {
+    expect(service).toBeTruthy();
+  });
+
+  describe('listar', () => {
+    it('debe solicitar lista de envios sin filtros', () => {
+      service.listar().subscribe((envios) => {
+        expect(envios.length).toBe(1);
+        expect(envios[0].codigoSeguimiento).toBe('RE-2026-001');
+      });
+
+      const req = httpMock.expectOne(baseUrl);
+      expect(req.request.method).toBe('GET');
+      req.flush([envioMock]);
+    });
+
+    it('debe aplicar parametros de filtro cuando se proporcionan', () => {
+      service.listar({ estado: 'CREADO', fechaDesde: '2026-10-01', fechaHasta: '2026-10-20' })
+        .subscribe((envios) => {
+          expect(envios).toBeDefined();
+        });
+
+      const req = httpMock.expectOne(
+        (r) => r.url === baseUrl &&
+          r.params.get('estado') === 'CREADO' &&
+          r.params.get('fechaDesde') === '2026-10-01T00:00:00' &&
+          r.params.get('fechaHasta') === '2026-10-20T23:59:59'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush([envioMock]);
+    });
+  });
+
+  describe('crear', () => {
+    it('debe enviar POST con el payload para crear un envio', () => {
+      const nuevo: CrearEnvioRequest = {
+        rutRemitente: '11111111-1',
+        rutDestinatario: '22222222-2',
+        sucursalOrigenId: 1,
+        servicioId: 2,
+        destino: {
+          calle: 'Calle Los Aromos',
+          numero: '456',
+          complemento: null,
+          idComuna: 13101
+        },
+        pesoKg: 3.5,
+        largoCm: 20,
+        anchoCm: 15,
+        altoCm: 10
+      };
+
+      service.crear(nuevo).subscribe((res) => {
+        expect(res.id).toBe(2);
+      });
+
+      const req = httpMock.expectOne(baseUrl);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(nuevo);
+      req.flush({ ...envioMock, id: 2, codigoSeguimiento: 'RE-2026-002' });
+    });
+  });
+
+  describe('aceptar', () => {
+    it('debe enviar POST a /api/bff/envios/7/aceptacion con el cuerpo correspondiente', () => {
+      const solicitud: AceptarEnvioRequest = {
+        pesoVerificadoKg: 4.5,
+        largoCm: 30,
+        anchoCm: 20,
+        altoCm: 10,
+        observacion: 'Caja reforzada'
+      };
+
+      service.aceptar(7, solicitud).subscribe((res) => {
+        expect(res.id).toBe(7);
+        expect(res.estado).toBe('ACEPTADO');
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/7/aceptacion`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(solicitud);
+      req.flush({ ...envioMock, id: 7, estado: 'ACEPTADO' });
+    });
+  });
+
+  describe('actualizarEstado', () => {
+    it('debe enviar PUT a /api/bff/envios/:id/estado', () => {
+      service.actualizarEstado(1, 'ACEPTADO').subscribe((res) => {
+        expect(res.estado).toBe('ACEPTADO');
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/1/estado`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({ estado: 'ACEPTADO' });
+      req.flush({ ...envioMock, estado: 'ACEPTADO' });
+    });
+  });
+
+  describe('solicitarEtiqueta', () => {
+    it('debe enviar POST a /api/bff/envios/:id/etiqueta para encolar en RabbitMQ', () => {
+      let completado = false;
+      service.solicitarEtiqueta(1).subscribe(() => {
+        completado = true;
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/1/etiqueta`);
+      expect(req.request.method).toBe('POST');
+      req.flush(null, { status: 202, statusText: 'Accepted' });
+      expect(completado).toBeTrue();
+    });
+  });
+
+  describe('obtenerRegiones', () => {
+    it('debe solicitar catalogo geografico a /api/bff/envios/geografia/regiones', () => {
+      service.obtenerRegiones().subscribe((regiones) => {
+        expect(regiones.length).toBe(1);
+        expect(regiones[0].nombre).toBe('Metropolitana');
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/geografia/regiones`);
+      expect(req.request.method).toBe('GET');
+      req.flush([{ idRegion: 13, nombre: 'Metropolitana', comunas: [] }]);
+    });
+  });
+});

@@ -1,0 +1,498 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+
+.etiqueta-modal-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 92vh;
+}
+
+.modal-header-barra {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+
+  .modal-titulo {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .modal-subtitulo {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0.25rem 0 0;
+  }
+
+  .boton-cerrar-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+  }
+}
+
+.alerta-rabbitmq {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.8rem;
+  background: #fffbeb;
+  border-bottom: 1px solid #fef3c7;
+  color: #92400e;
+
+  &.encolado-exitoso {
+    background: #f0fdf4;
+    border-bottom: 1px solid #bbf7d0;
+    color: #166534;
+  }
+
+  .alerta-icono {
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+
+  .alerta-cuerpo {
+    flex: 1;
+    strong {
+      margin-right: 0.35rem;
+    }
+  }
+
+  .boton-reintentar-mq {
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+.hoja-termica-contenedor {
+  padding: 1.25rem;
+  background: #f1f5f9;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  max-height: calc(92vh - 200px);
+}
+
+/* ==========================================================================
+   ESTRUCTURA DE ETIQUETA TERMICA FISICA (10x15 cm)
+   ========================================================================== */
+.etiqueta-termica {
+  width: 100%;
+  max-width: 440px;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  padding: 14px;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  .termica-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+
+    .termica-marca {
+      display: flex;
+      flex-direction: column;
+
+      .marca-nombre {
+        font-size: 1.15rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        line-height: 1.1;
+      }
+
+      .marca-sub {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #333333;
+      }
+    }
+
+    .termica-tipo-doc {
+      text-align: right;
+
+      .doc-badge {
+        display: inline-block;
+        background: #000000;
+        color: #ffffff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 6px;
+        letter-spacing: 0.5px;
+      }
+
+      .doc-fecha {
+        display: block;
+        font-size: 0.65rem;
+        font-family: monospace;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  .termica-barcode-seccion {
+    text-align: center;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+
+    .barcode-texto-grande {
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      font-family: 'Courier New', Courier, monospace;
+      margin-bottom: 4px;
+    }
+
+    .barcode-svg-render {
+      display: flex;
+      justify-content: center;
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .termica-direcciones-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+
+    .direccion-caja {
+      border: 1px solid #000000;
+      padding: 6px 8px;
+
+      &.caja-destinatario {
+        border: 2px solid #000000;
+        background: #fafafa;
+      }
+
+      .caja-etiqueta {
+        display: inline-block;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #000000;
+
+        &.destacada {
+          background: #000000;
+          color: #ffffff;
+          padding: 1px 4px;
+          border-bottom: none;
+        }
+      }
+
+      .caja-nombre {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 700;
+
+        &.destacado {
+          font-size: 0.95rem;
+          font-weight: 800;
+        }
+      }
+
+      .caja-rut {
+        margin: 2px 0;
+        font-size: 0.75rem;
+      }
+
+      .caja-direccion {
+        margin: 2px 0 0;
+        font-size: 0.8rem;
+        line-height: 1.25;
+
+        &.destacado {
+          font-size: 0.9rem;
+          font-weight: 800;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+
+  .termica-datos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+
+    .dato-celda {
+      border: 1px solid #000000;
+      padding: 4px;
+      text-align: center;
+
+      .dato-titulo {
+        display: block;
+        font-size: 0.55rem;
+        font-weight: 800;
+        color: #444444;
+        margin-bottom: 2px;
+      }
+
+      .dato-valor {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 800;
+        font-family: monospace;
+
+        &.valor-servicio {
+          font-size: 0.65rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        &.valor-peso {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+
+  .termica-pie-qr {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .qr-render-caja {
+      flex-shrink: 0;
+      border: 1px solid #000000;
+      padding: 4px;
+      background: #ffffff;
+
+      svg {
+        display: block;
+        width: 100px;
+        height: 100px;
+      }
+    }
+
+    .qr-instrucciones {
+      flex: 1;
+
+      .qr-titulo {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+      }
+
+      .qr-texto {
+        margin: 0;
+        font-size: 0.65rem;
+        line-height: 1.2;
+        color: #333333;
+      }
+
+      .qr-enlace {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.6rem;
+        font-family: monospace;
+        word-break: break-all;
+        background: #f1f5f9;
+        padding: 2px 4px;
+        border: 1px dashed #94a3b8;
+      }
+
+      .sello-bodega {
+        margin-top: 6px;
+        font-size: 0.55rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        border-top: 1px solid #000000;
+        padding-top: 3px;
+        color: #000000;
+      }
+    }
+  }
+}
+
+.modal-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+
+  .acciones-info {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  .acciones-botones {
+    display: flex;
+    gap: 0.75rem;
+
+    .boton-accion {
+      padding: 0.55rem 1.15rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+
+      &.secundario {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+
+        &:hover {
+          background: #f8fafc;
+          border-color: #94a3b8;
+        }
+      }
+
+      &.primario {
+        background: #0284c7;
+        border: 1px solid #0284c7;
+        color: #ffffff;
+
+        &:hover {
+          background: #0369a1;
+          border-color: #0369a1;
+        }
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   ESTILOS DE IMPRESION NATIVA PARA ROTULADO TERMICO (100mm x 150mm)
+   ========================================================================== */
+@media print {
+  @page {
+    size: 100mm 150mm;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* Ocultar toda la interfaz de la aplicacion excepto el modal y la etiqueta */
+  body * {
+    visibility: hidden;
+  }
+
+  .modal-overlay,
+  .etiqueta-modal-dialog,
+  .hoja-termica-contenedor,
+  .etiqueta-termica,
+  .etiqueta-termica * {
+    visibility: visible !important;
+  }
+
+  .modal-overlay {
+    position: static !important;
+    inset: auto !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .etiqueta-modal-dialog {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .modal-header-barra,
+  .alerta-rabbitmq,
+  .modal-acciones {
+    display: none !important;
+  }
+
+  .hoja-termica-contenedor {
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .etiqueta-termica {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100mm !important;
+    height: 150mm !important;
+    max-width: 100mm !important;
+    margin: 0 !important;
+    padding: 4mm !important;
+    border: 1.5mm solid #000000 !important;
+    box-sizing: border-box !important;
+    box-shadow: none !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

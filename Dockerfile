@@ -21,6 +21,9 @@ FROM nginx:1.27-alpine
 # Copiar configuracion de Nginx con Reverse Proxy y SPA
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Cabeceras de seguridad incluidas por cada location (issue #74)
+COPY nginx/cabeceras-seguridad.conf /etc/nginx/snippets/cabeceras-seguridad.conf
+
 # Copiar archivos compilados desde la etapa de construccion
 COPY --from=build /app/dist/rutaexpress-frontend/browser /usr/share/nginx/html
 
