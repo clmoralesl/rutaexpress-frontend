@@ -293,6 +293,39 @@ export class AuditoriaService {
   }
 
   /**
+   * Resuelve el envioId asociado a un codigo de seguimiento consultando al servidor.
+   * No usa datos de contingencia: devuelve null si no hay eventos y propaga los errores HTTP.
+   */
+  buscarEnvioIdPorCodigo(codigoSeguimiento: string): Observable<number | null> {
+    const params = new HttpParams()
+      .set('codigoSeguimiento', codigoSeguimiento.trim())
+      .set('size', '1');
+    return this.http.get<PaginaAuditoria>(`${this.baseUrl}/eventos`, {
+      headers: this.getHeaders(),
+      params
+    }).pipe(
+      map(pagina => (pagina?.content?.length ? pagina.content[0].envioId : null))
+    );
+  }
+
+  /**
+   * Obtiene el historial de un envio identificado por el par (envioId, codigoSeguimiento).
+   * No usa datos de contingencia: los errores HTTP se propagan al componente.
+   */
+  obtenerTimelinePorEnvioYCodigo(envioId: number, codigoSeguimiento: string): Observable<TimelineEnvio> {
+    const params = new HttpParams().set('codigoSeguimiento', codigoSeguimiento.trim());
+    return this.http.get<TimelineEnvio>(`${this.baseUrl}/envios/${envioId}`, {
+      headers: this.getHeaders(),
+      params
+    }).pipe(
+      map(timeline => {
+        this.origenDatosActual = 'ORACLE_DB';
+        return timeline;
+      })
+    );
+  }
+
+  /**
    * Retorna una copia del conjunto completo de eventos de contingencia.
    */
   obtenerEventosContingencia(): EventoAuditoria[] {

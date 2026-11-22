@@ -128,7 +128,7 @@
         </svg>
         <input
           type="search"
-          placeholder="Ingresar ID (ej: 4) o codigo de seguimiento (ej: RE-LIVE-001)..."
+          placeholder="Ingresar codigo de seguimiento (ej: RTX-2026-000123) o ID de envio..."
           [value]="busquedaEnvio()"
           (input)="busquedaEnvio.set($any($event.target).value)"
           aria-label="Buscar envio para inspeccion forense"
@@ -297,7 +297,7 @@
                     <button
                       type="button"
                       class="btn-inspeccionar-inline"
-                      (click)="inspeccionarEnvio(evento.envioId)"
+                      (click)="verTrazabilidad(evento)"
                       title="Inspeccionar historial completo de este envio">
                       Ver Trazabilidad Forense
                     </button>

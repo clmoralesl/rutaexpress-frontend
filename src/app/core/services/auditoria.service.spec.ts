@@ -213,4 +213,56 @@ describe('AuditoriaService', () => {
     const req = httpMock.expectOne(`${baseUrl}/envios/4`);
     req.flush('No encontrado', { status: 404, statusText: 'Not Found' });
   });
+
+  it('buscarEnvioIdPorCodigo envia codigoSeguimiento y size=1 a /eventos y devuelve el envioId', () => {
+    service.buscarEnvioIdPorCodigo('RTX-2026-000004').subscribe(envioId => {
+      expect(envioId).toBe(4);
+    });
+
+    const req = httpMock.expectOne(r =>
+      r.url === `${baseUrl}/eventos` &&
+      r.params.get('codigoSeguimiento') === 'RTX-2026-000004' &&
+      r.params.get('size') === '1'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      content: [{ envioId: 4, codigoSeguimiento: 'RTX-2026-000004' }],
+      totalElements: 1,
+      totalPages: 1
+    });
+  });
+
+  it('buscarEnvioIdPorCodigo devuelve null con pagina vacia sin contingencia', () => {
+    service.buscarEnvioIdPorCodigo('INEXISTENTE').subscribe(envioId => {
+      expect(envioId).toBeNull();
+    });
+
+    const req = httpMock.expectOne(r =>
+      r.url === `${baseUrl}/eventos` &&
+      r.params.get('codigoSeguimiento') === 'INEXISTENTE' &&
+      r.params.get('size') === '1'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ content: [], totalElements: 0, totalPages: 0 });
+  });
+
+  it('obtenerTimelinePorEnvioYCodigo envia el parametro y propaga el 404', () => {
+    let errorCapturado: any = null;
+    service.obtenerTimelinePorEnvioYCodigo(4, 'RTX-2026-000004').subscribe({
+      next: () => fail('No debio responder exitosamente'),
+      error: err => {
+        errorCapturado = err;
+      }
+    });
+
+    const req = httpMock.expectOne(r =>
+      r.url === `${baseUrl}/envios/4` &&
+      r.params.get('codigoSeguimiento') === 'RTX-2026-000004'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush('No encontrado', { status: 404, statusText: 'Not Found' });
+
+    expect(errorCapturado).toBeTruthy();
+    expect(errorCapturado.status).toBe(404);
+  });
 });
