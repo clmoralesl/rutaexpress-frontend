@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { PublicoService } from './publico.service';
-import { environment } from '../../../environments/environment';
+import { inicializarConfigEjecucion, obtenerApiUrl, reiniciarConfigEjecucionParaPruebas } from '../config/config-ejecucion';
 
 describe('PublicoService', () => {
   let service: PublicoService;
   let httpMock: HttpTestingController;
-  const base = `${environment.apiUrl}/api/publico`;
+  const base = `${obtenerApiUrl()}/api/publico`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -90,5 +90,30 @@ describe('PublicoService', () => {
     expect(req.request.params.get('anchoCm')).toBe('20');
     expect(req.request.params.get('altoCm')).toBe('30');
     req.flush({});
+  });
+});
+
+describe('PublicoService con el Gateway en tiempo de ejecucion', () => {
+  let httpTesting: HttpTestingController;
+
+  beforeEach(() => {
+    reiniciarConfigEjecucionParaPruebas();
+    inicializarConfigEjecucion({ apiUrl: 'https://abc123.execute-api.us-east-1.amazonaws.com' });
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [PublicoService]
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpTesting.verify();
+    reiniciarConfigEjecucionParaPruebas();
+  });
+
+  it('llamaAlGatewayConfiguradoEnEjecucion', () => {
+    const servicio = TestBed.inject(PublicoService);
+    servicio.obtenerServicios().subscribe();
+    httpTesting.expectOne('https://abc123.execute-api.us-east-1.amazonaws.com/api/publico/servicios').flush([]);
   });
 });

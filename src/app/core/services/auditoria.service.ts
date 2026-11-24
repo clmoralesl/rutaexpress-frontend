@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 export interface EventoAuditoria {
   id: number;
@@ -46,7 +46,7 @@ export interface FiltrosConsultaAuditoria {
 })
 export class AuditoriaService {
 
-  private readonly baseUrl = `${environment.apiUrl}/api/bff/auditoria`;
+  private readonly baseUrl = `${obtenerApiUrl()}/api/bff/auditoria`;
 
   // Dataset de contingencia sincronizado con eventos reales de Oracle ATP y Kafka Event Sourcing
   private readonly eventosContingencia: EventoAuditoria[] = [

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 export interface Comuna {
   idComuna: number;
@@ -100,7 +100,7 @@ export interface ActualizarEstadoRequest {
   providedIn: 'root'
 })
 export class EnviosService {
-  private readonly apiUrl = `${environment.apiUrl}/api/bff/envios`;
+  private readonly apiUrl = `${obtenerApiUrl()}/api/bff/envios`;
 
   constructor(private readonly http: HttpClient) {}
 

@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # Etapa 1: Construccion (Build)
 # ==========================================
 FROM node:20-alpine AS build
@@ -26,6 +26,10 @@ COPY nginx/cabeceras-seguridad.conf /etc/nginx/snippets/cabeceras-seguridad.conf
 
 # Copiar archivos compilados desde la etapa de construccion
 COPY --from=build /app/dist/rutaexpress-frontend/browser /usr/share/nginx/html
+
+COPY docker/40-rutaexpress-config.sh /docker-entrypoint.d/40-rutaexpress-config.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-rutaexpress-config.sh \
+ && chmod 755 /docker-entrypoint.d/40-rutaexpress-config.sh
 
 EXPOSE 80
 

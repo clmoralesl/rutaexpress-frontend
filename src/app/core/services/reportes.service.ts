@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 export type RangoTemporal = 'ultimas24h' | 'ultimos7dias' | 'ultimomes' | 'historico';
 
@@ -41,7 +41,7 @@ export interface RendimientoCourier {
 })
 export class ReportesService {
 
-  private readonly baseUrl = `${environment.apiUrl}/api/bff/reportes`;
+  private readonly baseUrl = `${obtenerApiUrl()}/api/bff/reportes`;
 
   private origenDatosActual: 'MOTOR_ANALITICO' | 'CONTINGENCIA' = 'CONTINGENCIA';
 

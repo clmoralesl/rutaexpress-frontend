@@ -7,12 +7,12 @@ import {
   ReportesService,
   TopServicio
 } from './reportes.service';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 describe('ReportesService', () => {
   let service: ReportesService;
   let httpMock: HttpTestingController;
-  const baseUrl = `${environment.apiUrl}/api/bff/reportes`;
+  const baseUrl = `${obtenerApiUrl()}/api/bff/reportes`;
 
   const mockKpis: KpisResumen = {
     leadTimePromedioHoras: 5.26,

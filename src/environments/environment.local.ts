@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  configEjecucionObligatoria: false,
   // URL local para cuando corras los microservicios de Spring Boot en tu propia máquina
   apiUrl: 'http://localhost:8080', 
 
