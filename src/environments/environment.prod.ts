@@ -1,7 +1,8 @@
 export const environment = {
   production: true,
+  configEjecucionObligatoria: true,
 
-  apiUrl: '', // Fachada Same-Origin mediante Nginx Reverse Proxy (/api/)
+  apiUrl: '', // Sin uso en produccion: la URL se lee de /config.js
 
   azure: {
     tenantId: 'e4f9c581-8160-4c70-8316-b47f57cd4965',

@@ -1,7 +1,8 @@
 export const environment = {
   production: false,
+  configEjecucionObligatoria: false,
 
-  apiUrl: 'https://ekqugjzknl.execute-api.us-east-1.amazonaws.com', // AWS API Gateway HTTP API v2
+  apiUrl: 'http://localhost:8080', // En produccion la URL llega en /config.js (issue #125)
 
   azure: {
     tenantId: 'e4f9c581-8160-4c70-8316-b47f57cd4965',

@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 export interface ServicioCatalogo {
   id: number;
@@ -43,7 +43,7 @@ export interface ActualizarServicioDto {
 })
 export class CatalogoService {
 
-  private readonly apiUrl = `${environment.apiUrl}/api/bff/catalogo/servicios`;
+  private readonly apiUrl = `${obtenerApiUrl()}/api/bff/catalogo/servicios`;
 
   // Catalogo de contingencia inicial para ejecucion resiliente offline o en entornos de prueba
   private serviciosLocales: ServicioCatalogo[] = [

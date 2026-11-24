@@ -6,12 +6,12 @@ import {
   CrearEnvioRequest,
   AceptarEnvioRequest
 } from './envios.service';
-import { environment } from '../../../environments/environment';
+import { inicializarConfigEjecucion, obtenerApiUrl, reiniciarConfigEjecucionParaPruebas } from '../config/config-ejecucion';
 
 describe('EnviosService', () => {
   let service: EnviosService;
   let httpMock: HttpTestingController;
-  const baseUrl = `${environment.apiUrl}/api/bff/envios`;
+  const baseUrl = `${obtenerApiUrl()}/api/bff/envios`;
 
   const envioMock: Envio = {
     id: 1,
@@ -163,5 +163,30 @@ describe('EnviosService', () => {
       expect(req.request.method).toBe('GET');
       req.flush([{ idRegion: 13, nombre: 'Metropolitana', comunas: [] }]);
     });
+  });
+});
+
+describe('EnviosService con el Gateway en tiempo de ejecucion', () => {
+  let httpTesting: HttpTestingController;
+
+  beforeEach(() => {
+    reiniciarConfigEjecucionParaPruebas();
+    inicializarConfigEjecucion({ apiUrl: 'https://abc123.execute-api.us-east-1.amazonaws.com' });
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [EnviosService]
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpTesting.verify();
+    reiniciarConfigEjecucionParaPruebas();
+  });
+
+  it('llamaAlGatewayConfiguradoEnEjecucion', () => {
+    const servicio = TestBed.inject(EnviosService);
+    servicio.obtenerRegiones().subscribe();
+    httpTesting.expectOne('https://abc123.execute-api.us-east-1.amazonaws.com/api/bff/envios/geografia/regiones').flush([]);
   });
 });

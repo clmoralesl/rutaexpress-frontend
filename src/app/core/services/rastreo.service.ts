@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, of, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 export type EstadoSeguimiento = 'CREADO' | 'ACEPTADO' | 'EN_BODEGA' | 'EN_RUTA' | 'ENTREGADO' | 'CANCELADO';
 
@@ -31,7 +31,7 @@ export interface SeguimientoEnvio {
 export class RastreoService {
 
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/api/publico/seguimiento`;
+  private readonly baseUrl = `${obtenerApiUrl()}/api/publico/seguimiento`;
 
   private readonly datosDemostracion: Record<string, SeguimientoEnvio> = {
     'RTX-2026-0001': {

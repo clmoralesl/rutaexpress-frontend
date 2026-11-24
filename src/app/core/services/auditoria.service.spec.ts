@@ -8,12 +8,12 @@ import {
   PaginaAuditoria,
   TimelineEnvio
 } from './auditoria.service';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 
 describe('AuditoriaService', () => {
   let service: AuditoriaService;
   let httpMock: HttpTestingController;
-  const baseUrl = `${environment.apiUrl}/api/bff/auditoria`;
+  const baseUrl = `${obtenerApiUrl()}/api/bff/auditoria`;
 
   const mockEvento: EventoAuditoria = {
     id: 101,

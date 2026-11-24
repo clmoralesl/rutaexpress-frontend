@@ -6,12 +6,12 @@ import {
   CrearServicioDto,
   ActualizarServicioDto
 } from './catalogo.service';
-import { environment } from '../../../environments/environment';
+import { inicializarConfigEjecucion, obtenerApiUrl, reiniciarConfigEjecucionParaPruebas } from '../config/config-ejecucion';
 
 describe('CatalogoService', () => {
   let service: CatalogoService;
   let httpMock: HttpTestingController;
-  const apiUrl = `${environment.apiUrl}/api/bff/catalogo/servicios`;
+  const apiUrl = `${obtenerApiUrl()}/api/bff/catalogo/servicios`;
 
   const mockServicios: ServicioCatalogo[] = [
     {
@@ -150,5 +150,30 @@ describe('CatalogoService', () => {
     const req = httpMock.expectOne(`${apiUrl}/1`);
     expect(req.request.method).toBe('PUT');
     req.flush(respuestaActualizada);
+  });
+});
+
+describe('CatalogoService con el Gateway en tiempo de ejecucion', () => {
+  let httpTesting: HttpTestingController;
+
+  beforeEach(() => {
+    reiniciarConfigEjecucionParaPruebas();
+    inicializarConfigEjecucion({ apiUrl: 'https://abc123.execute-api.us-east-1.amazonaws.com' });
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [CatalogoService]
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpTesting.verify();
+    reiniciarConfigEjecucionParaPruebas();
+  });
+
+  it('llamaAlGatewayConfiguradoEnEjecucion', () => {
+    const servicio = TestBed.inject(CatalogoService);
+    servicio.listarServicios().subscribe();
+    httpTesting.expectOne('https://abc123.execute-api.us-east-1.amazonaws.com/api/bff/catalogo/servicios').flush([]);
   });
 });

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, shareReplay, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { obtenerApiUrl } from '../config/config-ejecucion';
 import { Region } from './envios.service';
 
 export interface SucursalPublica {
@@ -63,7 +63,7 @@ export const AVISO_REFERENCIAL = 'Valor referencial. El precio final se confirma
   providedIn: 'root'
 })
 export class PublicoService {
-  private readonly apiUrl = `${environment.apiUrl}/api/publico`;
+  private readonly apiUrl = `${obtenerApiUrl()}/api/publico`;
 
   private sucursales$?: Observable<SucursalPublica[]>;
   private servicios$?: Observable<ServicioPublico[]>;
